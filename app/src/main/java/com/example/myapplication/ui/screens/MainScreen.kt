@@ -17,13 +17,15 @@ import com.example.myapplication.ui.components.BottomNavigationBar
 import com.example.myapplication.viewmodel.ProductViewModel
 import com.example.myapplication.utils.SharedPrefUtils
 import com.example.myapplication.data.models.Product
-
+import com.example.myapplication.viewmodel.AuthViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(
     viewModel: ProductViewModel,
     onProductClick: (Product) -> Unit,
-    navController: NavController
+    navController: NavController,
+    authViewModel: AuthViewModel,
+
 ) {
     val context = LocalContext.current // Đưa LocalContext ra ngoài phạm vi @Composable
 
@@ -34,7 +36,6 @@ fun MainScreen(
     LaunchedEffect(Unit) {
         viewModel.fetchCategories()
     }
-
     Scaffold(
         topBar = {
             Column {
@@ -63,13 +64,13 @@ fun MainScreen(
                             IconButton(onClick = { /* TODO: Thêm logic giỏ hàng */ }) {
                                 Icon(Icons.Default.ShoppingCart, contentDescription = "Cart")
                             }
-                            IconButton(onClick = {
-                                // Xử lý đăng xuất
-                                SharedPrefUtils.clearUserId(context) // Dùng context đã lưu
-                                navController.navigate("login") {
-                                    popUpTo("product_list") { inclusive = true }
+                            IconButton(
+                                onClick = {
+                                    // Sử dụng authViewModel để xử lý đăng xuất thay vì trực tiếp
+                                    authViewModel.logout(context)
+                                    // Navigation sẽ được xử lý tự động bởi LaunchedEffect trong AppNavigation
                                 }
-                            }) {
+                            ) {
                                 Icon(Icons.Default.Logout, contentDescription = "Logout")
                             }
                         }

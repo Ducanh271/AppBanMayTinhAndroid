@@ -43,6 +43,9 @@ android {
 }
 
 dependencies {
+    // Thêm các dependencies mới
+    implementation("com.google.code.gson:gson:2.10.1")
+    implementation("androidx.security:security-crypto:1.1.0-alpha06")
     // Core Android
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
