@@ -23,25 +23,37 @@ fun AppNavigation(
     viewModel: ProductViewModel,
     authViewModel: AuthViewModel
 ) {
+    // Lấy context hiện tại
     val context = LocalContext.current
+
+    // Theo dõi trạng thái đăng nhập
     val isLoggedIn by authViewModel.isLoggedIn.collectAsState()
 
+    // Kiểm tra trạng thái đăng nhập khi khởi động
     LaunchedEffect(Unit) {
         authViewModel.checkLoginStatus(context)
     }
 
+    // Xử lý điều hướng khi trạng thái đăng nhập thay đổi
     LaunchedEffect(isLoggedIn) {
         if (isLoggedIn) {
             navController.navigate("product_list") {
                 popUpTo("login") { inclusive = true }
             }
+        } else {
+            // Khi đăng xuất, điều hướng về màn hình login
+            navController.navigate("login") {
+                popUpTo(0) { inclusive = true }
+            }
         }
     }
 
+    // Cấu hình điều hướng
     NavHost(
         navController = navController,
         startDestination = if (isLoggedIn) "product_list" else "login"
     ) {
+        // Màn hình đăng nhập
         composable("login") {
             LoginScreen(
                 navController = navController,
@@ -53,6 +65,7 @@ fun AppNavigation(
             }
         }
 
+        // Màn hình đăng ký
         composable("sign_up") {
             SignUpScreen(
                 viewModel = authViewModel,
@@ -69,20 +82,29 @@ fun AppNavigation(
             )
         }
 
+        // Màn hình danh sách sản phẩm
         composable("product_list") {
             MainScreen(
                 viewModel = viewModel,
                 navController = navController,
+                authViewModel = authViewModel,  // Truyền authViewModel vào MainScreen
                 onProductClick = { product ->
                     navController.navigate("product_detail/${product.id}")
                 }
             )
         }
 
+        // Màn hình chi tiết sản phẩm
         composable("product_detail/{productId}") { backStackEntry ->
+            // Lấy productId từ arguments
             val productId = backStackEntry.arguments?.getString("productId") ?: return@composable
-            LaunchedEffect(productId) { viewModel.fetchProductById(productId) }
 
+            // Fetch thông tin sản phẩm khi vào màn hình
+            LaunchedEffect(productId) {
+                viewModel.fetchProductById(productId)
+            }
+
+            // Hiển thị màn hình chi tiết sản phẩm
             val product by viewModel.selectedProduct.collectAsState()
             Box(modifier = Modifier.fillMaxSize()) {
                 if (product != null) {
@@ -91,6 +113,7 @@ fun AppNavigation(
                         onBack = { navController.popBackStack() }
                     )
                 } else {
+                    // Hiển thị loading khi đang fetch dữ liệu
                     CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
                 }
             }

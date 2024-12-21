@@ -1,9 +1,15 @@
 package com.example.myapplication.ui.screens
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -17,136 +23,206 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import com.example.myapplication.R
+import com.example.myapplication.utils.AccountPreferences
 import com.example.myapplication.viewmodel.AuthViewModel
+import androidx.compose.foundation.clickable
 
 @Composable
 fun LoginScreen(
     navController: NavHostController,
     viewModel: AuthViewModel,
-    onLoginSuccess: () -> Unit,
+    onLoginSuccess: () -> Unit
 ) {
+    // Biến trạng thái cho email, password và hiển thị mật khẩu
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-    var isPasswordVisible by remember { mutableStateOf(false) }
+    var showPassword by remember { mutableStateOf(false) }
+    var showSaveAccountDialog by remember { mutableStateOf(false) }
+
     val loginState by viewModel.loginState.collectAsState()
-    val isLoggedIn by viewModel.isLoggedIn.collectAsState()
     val context = LocalContext.current
 
-    LaunchedEffect(isLoggedIn) {
-        if (isLoggedIn) {
-            onLoginSuccess()
+    val accountPreferences = remember { AccountPreferences(context) }
+    val suggestedAccounts = remember(email) {
+        if (email.isNotEmpty()) {
+            accountPreferences.getSavedAccounts().filter {
+                it.email.startsWith(email, ignoreCase = true)
+            }
+        } else {
+            emptyList()
         }
     }
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp),
-        contentAlignment = Alignment.Center
+            .padding(16.dp) // Padding chung cho toàn bộ màn hình
     ) {
         Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
+                .align(Alignment.Center)
+                .verticalScroll(rememberScrollState()), // Cho phép cuộn nếu nội dung dài
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            // Logo
             Image(
-                painter = painterResource(id = com.example.myapplication.R.drawable.logoapp),
-                contentDescription = "App Logo",
-                modifier = Modifier.size(100.dp)
+                painter = painterResource(id = R.drawable.logoapp),
+                contentDescription = "Logo",
+                modifier = Modifier
+                    .size(100.dp) // Giảm kích thước logo để tạo thêm không gian
+                    .padding(bottom = 24.dp) // Tạo khoảng cách dưới logo
             )
-            Spacer(modifier = Modifier.height(16.dp))
-            Text(
-                text = "Welcome Back!",
-                style = MaterialTheme.typography.headlineMedium,
-                color = Color(0xFF6200EE)
-            )
-            Spacer(modifier = Modifier.height(16.dp))
 
+            // Tiêu đề
+            Text(
+                text = "Welcome Back",
+                style = MaterialTheme.typography.headlineMedium,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.padding(bottom = 24.dp) // Tạo khoảng cách dưới tiêu đề
+            )
+
+            // Danh sách gợi ý tài khoản (hiển thị phía trên trường nhập email)
+            if (suggestedAccounts.isNotEmpty()) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 8.dp) // Padding ngang để tránh sát lề
+                        .padding(bottom = 16.dp) // Tạo khoảng cách dưới danh sách gợi ý
+                ) {
+                    suggestedAccounts.forEach { account ->
+                        Text(
+                            text = account.email,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    email = account.email
+                                    password = account.password
+                                }
+                                .padding(vertical = 8.dp, horizontal = 8.dp),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = Color.Gray
+                        )
+                    }
+                }
+            }
+
+            // Trường nhập Email
             OutlinedTextField(
                 value = email,
                 onValueChange = { email = it },
                 label = { Text("Email") },
+                leadingIcon = { Icon(Icons.Default.Email, contentDescription = "Email Icon") },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-                modifier = Modifier.fillMaxWidth()
+                singleLine = true,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 8.dp) // Padding ngang để tránh sát lề
+                    .padding(bottom = 16.dp) // Tạo khoảng cách dưới trường nhập
             )
-            Spacer(modifier = Modifier.height(8.dp))
 
+            // Trường nhập Password
             OutlinedTextField(
                 value = password,
                 onValueChange = { password = it },
                 label = { Text("Password") },
-                visualTransformation = if (isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                leadingIcon = { Icon(Icons.Default.Lock, contentDescription = "Password Icon") },
+                trailingIcon = {
+                    IconButton(onClick = { showPassword = !showPassword }) {
+                        Icon(
+                            imageVector = if (showPassword) Icons.Default.VisibilityOff else Icons.Default.Visibility,
+                            contentDescription = "Toggle Password Visibility"
+                        )
+                    }
+                },
+                visualTransformation = if (showPassword) VisualTransformation.None else PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
+                singleLine = true,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 8.dp)
-            ) {
-                Checkbox(
-                    checked = isPasswordVisible,
-                    onCheckedChange = { isPasswordVisible = it }
-                )
-                Text("Show Password", style = MaterialTheme.typography.bodySmall)
-            }
+                    .padding(horizontal = 8.dp) // Padding ngang để tạo không gian
+                    .padding(bottom = 24.dp) // Tạo khoảng cách dưới trường nhập
+            )
 
-            Spacer(modifier = Modifier.height(16.dp))
-
+            // Nút Login
             Button(
-                onClick = { viewModel.login(email, password, context) },
-                modifier = Modifier.fillMaxWidth()
+                onClick = {
+                    viewModel.login(email, password, context)
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(50.dp)
+                    .padding(horizontal = 8.dp) // Padding ngang cho nút
             ) {
                 Text("Login", fontSize = 18.sp)
             }
 
-            if (loginState.isLoading) {
-                Spacer(modifier = Modifier.height(8.dp))
-                CircularProgressIndicator()
-            }
-            if (loginState.success != null) {
-                onLoginSuccess()
-            } else if (loginState.error != null) {
-                Spacer(modifier = Modifier.height(8.dp))
+            // Hiển thị lỗi nếu có
+            loginState.error?.let { error ->
                 Text(
-                    text = "Error: ${loginState.error}",
+                    text = error,
                     color = MaterialTheme.colorScheme.error,
-                    style = MaterialTheme.typography.bodySmall
+                    modifier = Modifier
+                        .padding(top = 16.dp)
+                        .padding(horizontal = 8.dp), // Padding ngang để tránh bị che
+                    style = MaterialTheme.typography.bodyMedium
                 )
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
-            if (isLoggedIn) {
-                Button(
-                    onClick = {
-                        viewModel.logout(context)
-                        navController.navigate("login") {
-                            popUpTo(navController.graph.startDestinationId) {
-                                inclusive = true
-                            }
-                        }
-                    },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text("Logout", fontSize = 18.sp)
+            // Điều hướng đến màn hình đăng ký
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text("Don't have an account?", color = Color.Gray)
+                Spacer(modifier = Modifier.width(4.dp))
+                TextButton(onClick = { navController.navigate("sign_up") }) {
+                    Text("Sign Up")
                 }
             }
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(
-                    text = "Sign up",
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.clickable {
-                        navController.navigate("sign_up")
-                    }
+            // Loading indicator (nếu đang đăng nhập)
+            if (loginState.isLoading) {
+                CircularProgressIndicator(
+                    modifier = Modifier
+                        .padding(top = 16.dp)
+                        .padding(horizontal = 8.dp) // Padding ngang để đồng nhất
                 )
             }
+        }
+
+        // Hộp thoại lưu tài khoản (Save hoặc No Thanks)
+        if (showSaveAccountDialog) {
+            AlertDialog(
+                onDismissRequest = { showSaveAccountDialog = false },
+                title = { Text("Save Account?") },
+                text = { Text("Would you like to save this account for faster login next time?") },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            accountPreferences.saveAccount(email, password)
+                            showSaveAccountDialog = false
+                            onLoginSuccess()
+                        }
+                    ) {
+                        Text("Save")
+                    }
+                },
+                dismissButton = {
+                    TextButton(
+                        onClick = {
+                            showSaveAccountDialog = false
+                            onLoginSuccess()
+                        }
+                    ) {
+                        Text("No Thanks")
+                    }
+                }
+            )
         }
     }
 }
