@@ -1,5 +1,3 @@
-
-
 package com.example.myapplication.navigation
 
 import androidx.compose.foundation.layout.Box
@@ -116,6 +114,8 @@ fun AppNavigation(
                 }
             }
         }
+        // Màn hình giỏ hàng
+
 
 //        // Màn hình thanh toán
 //        composable("checkout/{productId}") { backStackEntry ->
@@ -155,5 +155,6 @@ fun AppNavigation(
 
 
     }
+
 }
 
