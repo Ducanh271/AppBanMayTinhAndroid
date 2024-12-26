@@ -23,7 +23,6 @@ class ProductRepository(private val api: ProductApi) {
         return response.products // trả về sản phẩm theo category
     }
 
-
     suspend fun getProductById(productId: String): Product {
         return api.getProductById(productId)
     }

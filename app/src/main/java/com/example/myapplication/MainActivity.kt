@@ -9,8 +9,8 @@ import androidx.navigation.compose.rememberNavController
 import com.example.myapplication.data.api.ApiService
 import com.example.myapplication.data.repository.AuthRepository
 import com.example.myapplication.data.repository.ProductRepository
-import com.example.myapplication.data.repository.CartRepository
 import com.example.myapplication.navigation.AppNavigation
+import com.example.myapplication.data.repository.CartRepository
 import com.example.myapplication.viewmodel.AuthViewModel
 import com.example.myapplication.viewmodel.AuthViewModelFactory
 import com.example.myapplication.viewmodel.ProductViewModel
@@ -44,7 +44,8 @@ class MainActivity : ComponentActivity() {
             AppNavigation(
                 navController = navController,
                 viewModel = productViewModel,
-                authViewModel = authViewModel
+                authViewModel = authViewModel,
+                cartViewModel = cardViewModel
             )
         }
     }

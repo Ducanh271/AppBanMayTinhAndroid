@@ -18,11 +18,14 @@ import com.example.myapplication.viewmodel.ProductViewModel
 import com.example.myapplication.utils.SharedPrefUtils
 import com.example.myapplication.data.models.Product
 import com.example.myapplication.viewmodel.AuthViewModel
+import com.example.myapplication.viewmodel.CartViewModel
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(
     viewModel: ProductViewModel,
     onProductClick: (Product) -> Unit,
+    cartViewModel: CartViewModel, // Thêm tham số này
     navController: NavController,
     authViewModel: AuthViewModel,
 
@@ -61,7 +64,7 @@ fun MainScreen(
                                 },
                                 modifier = Modifier.weight(1f)
                             )
-                            IconButton(onClick = { /* TODO: Thêm logic giỏ hàng */ }) {
+                            IconButton(onClick = {  navController.navigate("cart") }) {
                                 Icon(Icons.Default.ShoppingCart, contentDescription = "Cart")
                             }
                             IconButton(
@@ -107,7 +110,9 @@ fun MainScreen(
         }
     ) { innerPadding ->
         Box(modifier = Modifier.padding(innerPadding)) {
-            ProductListScreen(viewModel = viewModel, onProductClick = onProductClick)
+            ProductListScreen(viewModel = viewModel,
+                cartViewModel = cartViewModel,
+                onProductClick = onProductClick)
         }
     }
 }
