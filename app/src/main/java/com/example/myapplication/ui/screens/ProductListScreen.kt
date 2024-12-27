@@ -27,8 +27,8 @@ fun ProductListScreen(
     val productList by viewModel.productList.collectAsState() // Danh sách sản phẩm
     val isLoading by viewModel.isLoading.collectAsState()     // Trạng thái loading
     val errorMessage by viewModel.errorMessage.collectAsState() // Thông báo lỗi
-    val userId = LocalUserId.current // Lấy UserID từ CompositionLocal
-
+    val context = LocalContext.current
+    val userId = SharedPrefUtils.getUserId(context)
     // Lấy userId từ SharedPreferences
 
     // Gọi fetchProducts khi màn hình được khởi chạy

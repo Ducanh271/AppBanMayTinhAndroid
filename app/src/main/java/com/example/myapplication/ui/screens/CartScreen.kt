@@ -23,13 +23,17 @@ import androidx.compose.ui.unit.sp
 import com.example.myapplication.utils.LocalUserId
 import java.text.NumberFormat
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import com.example.myapplication.utils.SharedPrefUtils
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CartScreen(viewModel: CartViewModel, onBack: () -> Unit) {
 
-    val userId = LocalUserId.current
+
+    val context = LocalContext.current
+    val userId = SharedPrefUtils.getUserId(context)
 
     LaunchedEffect(userId) {
         userId?.let {
