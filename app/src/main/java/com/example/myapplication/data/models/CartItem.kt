@@ -4,7 +4,7 @@ package com.example.myapplication.data.models
 import com.google.gson.annotations.SerializedName
 
 data class CartItem(
-    @SerializedName("_id") val productId: String,
+    val productId: String,
     val title: String,
     val price: Double,
     val image: String,

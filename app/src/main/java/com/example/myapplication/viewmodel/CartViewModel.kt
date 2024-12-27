@@ -46,21 +46,42 @@ class CartViewModel(private val cartRepository: CartRepository) : ViewModel() {
             }
         }
     }
-    fun updateCartItem(userId: String, productId: String, request: UpdateCartItemRequest) {
+
+    fun updateCartItem(userId: String, productId: String, newQuantity: Int) {
+        // Cập nhật cục bộ trước để giao diện phản hồi ngay lập tức
+        updateCartItemLocally(productId, newQuantity)
+
+        // Gửi API cập nhật
         viewModelScope.launch {
-            _isLoading.value = true
             try {
+                val request = UpdateCartItemRequest(quantity = newQuantity)
                 val response = cartRepository.updateCartItem(userId, productId, request)
-                _message.value = response.message
-                loadCart(userId)
+                if (!response.success) {
+                    _message.value = response.message ?: "Failed to update item."
+                    // Khôi phục trạng thái nếu API thất bại
+                    loadCart(userId)
+                }
             } catch (e: Exception) {
-                _message.value = "Failed to update item: ${e.message}"
-            } finally {
-                _isLoading.value = false
+                _message.value = "Error: ${e.message}"
+                // Khôi phục trạng thái nếu API thất bại
+                loadCart(userId)
             }
         }
     }
 
+    // hàm để hiển thị qua màn hình mà ko cần gọi api
+    fun updateCartItemLocally(productId: String, newQuantity: Int) {
+        _cartState.value?.let { cart ->
+            val updatedItems = cart.items.map { item ->
+                if (item.productId == productId) item.copy(quantity = newQuantity, total = item.price * newQuantity)
+                else item
+            }
+            _cartState.value = cart.copy(items = updatedItems)
+        }
+    }
+    fun calculateTotalPrice(): Double {
+        return _cartState.value?.items?.sumOf { it.total } ?: 0.0
+    }
     fun removeCartItem(userId: String, productId: String) {
         viewModelScope.launch {
             _isLoading.value = true
