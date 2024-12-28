@@ -109,7 +109,7 @@ fun CartScreen(viewModel: CartViewModel,
                         val formattedTotalPrice = NumberFormat.getCurrencyInstance().format(totalPrice)
 
                         Text(
-                            text = "Total Price: $formattedTotalPrice",
+                            text = "Tổng số tiền: $formattedTotalPrice",
                             style = MaterialTheme.typography.bodyLarge.copy(
                                 fontSize = 25.sp,
                                 color = Color.Black,
@@ -121,14 +121,14 @@ fun CartScreen(viewModel: CartViewModel,
                             onClick =    onCheckout,//{ /* Checkout logic */ },
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(56.dp)
+                                .height(50.dp)
                                 .background(
                                     color = MaterialTheme.colorScheme.primary,
                                     shape = RoundedCornerShape(12.dp)
                                 ),
                             colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                         ) {
-                            Text("Checkout", fontSize = 20.sp)
+                            Text("Thanh toán", fontSize = 17.sp)
                         }
                         Spacer(modifier = Modifier.height(8.dp))
 
@@ -141,11 +141,13 @@ fun CartScreen(viewModel: CartViewModel,
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(50.dp),
-                            colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
+                            //colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
+                            colors = ButtonDefaults.buttonColors(containerColor = Color.Red),
+                            shape = RoundedCornerShape(12.dp)
                         ) {
                             Text(
-                                text = "Clear All",
-                                fontSize = 16.sp,
+                                text = "Xóa hết sản phẩm",
+                                fontSize = 17.sp,
                                 color = Color.White
                             )
                         }
