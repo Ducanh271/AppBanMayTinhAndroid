@@ -17,13 +17,14 @@ import com.example.myapplication.utils.LocalUserId
 import com.example.myapplication.viewmodel.AuthViewModel
 import com.example.myapplication.viewmodel.CartViewModel
 import com.example.myapplication.viewmodel.ProductViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel // Thêm import này
 
 @Composable
 fun AppNavigation(
     navController: NavHostController,
     viewModel: ProductViewModel,
     authViewModel: AuthViewModel,
-    cartViewModel: CartViewModel
+    cartViewModel: CartViewModel = viewModel() // Khởi tạo CartViewModel với viewModel()
 ) {
     // Lấy context hiện tại
     val context = LocalContext.current
@@ -58,7 +59,6 @@ fun AppNavigation(
             navController = navController,
             startDestination = if (isLoggedIn) "product_list" else "login"
         ) {
-            // Màn hình đăng nhập
             composable("login") {
                 LoginScreen(
                     navController = navController,
@@ -70,7 +70,6 @@ fun AppNavigation(
                 }
             }
 
-            // Màn hình đăng ký
             composable("sign_up") {
                 SignUpScreen(
                     viewModel = authViewModel,
@@ -87,20 +86,18 @@ fun AppNavigation(
                 )
             }
 
-            // Màn hình danh sách sản phẩm
             composable("product_list") {
                 MainScreen(
                     viewModel = viewModel,
                     navController = navController,
                     authViewModel = authViewModel,
-                    cartViewModel = cartViewModel, // Truyền thêm cartViewModel
+                    cartViewModel = cartViewModel,
                     onProductClick = { product ->
                         navController.navigate("product_detail/${product.id}")
                     }
                 )
             }
 
-            // Màn hình chi tiết sản phẩm
             composable("product_detail/{productId}") { backStackEntry ->
                 val productId = backStackEntry.arguments?.getString("productId") ?: return@composable
 
@@ -134,15 +131,21 @@ fun AppNavigation(
                 }
             }
 
-            // Màn hình giỏ hàng
             composable("cart") {
                 CartScreen(
                     viewModel = cartViewModel,
+                    onBack = { navController.popBackStack() },
+                    onCheckout = { navController.navigate("checkout_cart") }
+                )
+            }
+
+            composable("checkout_cart") {
+                CheckoutScreenCart(
+                    viewModel = cartViewModel, // Truyền cartViewModel vào đây
                     onBack = { navController.popBackStack() }
                 )
             }
 
-            // Màn hình thanh toán
             composable("checkout/{productId}") { backStackEntry ->
                 val productId = backStackEntry.arguments?.getString("productId") ?: return@composable
 

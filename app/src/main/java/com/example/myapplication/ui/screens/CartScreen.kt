@@ -29,7 +29,9 @@ import com.example.myapplication.utils.SharedPrefUtils
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CartScreen(viewModel: CartViewModel, onBack: () -> Unit) {
+fun CartScreen(viewModel: CartViewModel,
+               onBack: () -> Unit,
+               onCheckout: () -> Unit) {
 
     val context = LocalContext.current
     val userId = SharedPrefUtils.getUserId(context)
@@ -116,7 +118,7 @@ fun CartScreen(viewModel: CartViewModel, onBack: () -> Unit) {
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Button(
-                            onClick = { /* Checkout logic */ },
+                            onClick =    onCheckout,//{ /* Checkout logic */ },
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(56.dp)
