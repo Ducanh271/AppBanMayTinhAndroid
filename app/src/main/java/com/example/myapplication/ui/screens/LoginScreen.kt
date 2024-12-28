@@ -77,7 +77,7 @@ fun LoginScreen(
 
             // Tiêu đề
             Text(
-                text = "Welcome Back",
+                text = "Đăng nhập",
                 style = MaterialTheme.typography.headlineMedium,
                 color = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.padding(bottom = 24.dp) // Tạo khoảng cách dưới tiêu đề
@@ -126,7 +126,7 @@ fun LoginScreen(
             OutlinedTextField(
                 value = password,
                 onValueChange = { password = it },
-                label = { Text("Password") },
+                label = { Text("Mật khẩu") },
                 leadingIcon = { Icon(Icons.Default.Lock, contentDescription = "Password Icon") },
                 trailingIcon = {
                     IconButton(onClick = { showPassword = !showPassword }) {
@@ -155,7 +155,7 @@ fun LoginScreen(
                     .height(50.dp)
                     .padding(horizontal = 8.dp) // Padding ngang cho nút
             ) {
-                Text("Login", fontSize = 18.sp)
+                Text("Đăng nhập", fontSize = 18.sp)
             }
 
             // Hiển thị lỗi nếu có
@@ -178,10 +178,10 @@ fun LoginScreen(
                 horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text("Don't have an account?", color = Color.Gray)
+                Text("Bạn chưa có tài khoản?", color = Color.Gray)
                 Spacer(modifier = Modifier.width(4.dp))
                 TextButton(onClick = { navController.navigate("sign_up") }) {
-                    Text("Sign Up")
+                    Text("Đăng ký")
                 }
             }
 

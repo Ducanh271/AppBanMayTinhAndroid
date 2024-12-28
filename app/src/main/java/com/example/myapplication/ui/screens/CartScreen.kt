@@ -31,10 +31,10 @@ import com.example.myapplication.utils.SharedPrefUtils
 @Composable
 fun CartScreen(viewModel: CartViewModel, onBack: () -> Unit) {
 
-
     val context = LocalContext.current
     val userId = SharedPrefUtils.getUserId(context)
 
+    // Load cart when userId is available
     LaunchedEffect(userId) {
         userId?.let {
             viewModel.loadCart(it)
@@ -56,7 +56,10 @@ fun CartScreen(viewModel: CartViewModel, onBack: () -> Unit) {
                         Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Back")
                     }
                 },
-                colors = TopAppBarDefaults.mediumTopAppBarColors(containerColor = MaterialTheme.colorScheme.primary, titleContentColor = Color.White)
+                colors = TopAppBarDefaults.mediumTopAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    titleContentColor = Color.White
+                )
             )
         }
     ) { padding ->
@@ -69,10 +72,12 @@ fun CartScreen(viewModel: CartViewModel, onBack: () -> Unit) {
                 CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
             } else {
                 cartState?.let { cart ->
+                    // Product list in the cart
                     LazyColumn(
                         modifier = Modifier
                             .fillMaxSize()
-                            .padding(bottom = 80.dp) // Reserve space for total price and checkout button
+                            .padding(bottom = 100.dp), // Add space to avoid overlap with total price section
+                        contentPadding = PaddingValues(bottom = 100.dp), // Ensure the last item is fully visible
                     ) {
                         items(cart.items) { cartItem ->
                             CartItemRow(
@@ -91,6 +96,7 @@ fun CartScreen(viewModel: CartViewModel, onBack: () -> Unit) {
                         }
                     }
 
+                    // Total Price and Checkout button section
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -120,7 +126,7 @@ fun CartScreen(viewModel: CartViewModel, onBack: () -> Unit) {
                                 ),
                             colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                         ) {
-                            Text("Checkout", fontSize = 20.sp,  )
+                            Text("Checkout", fontSize = 20.sp)
                         }
                         Spacer(modifier = Modifier.height(8.dp))
 

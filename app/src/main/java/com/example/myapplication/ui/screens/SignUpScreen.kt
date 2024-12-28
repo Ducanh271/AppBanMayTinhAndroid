@@ -1,5 +1,6 @@
 package com.example.myapplication.ui.screens
 
+import android.util.Patterns
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
@@ -29,10 +30,15 @@ fun SignUpScreen(
     onSignUpSuccess: () -> Unit,
     onLoginClick: () -> Unit,
 ) {
+    // Biến trạng thái cho các trường nhập
     var name by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var showPassword by remember { mutableStateOf(false) }
+    var emailError by remember { mutableStateOf("") } // Trạng thái hiển thị lỗi email
+    var passwordError by remember { mutableStateOf("") } // Trạng thái hiển thị lỗi mật khẩu
+
+    // Lấy trạng thái ViewModel
     val signUpState by viewModel.signUpState.collectAsState()
     val context = LocalContext.current
 
@@ -58,17 +64,17 @@ fun SignUpScreen(
 
             // Tiêu đề
             Text(
-                text = "Create Account",
+                text = "Tạo tài khoản",
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(bottom = 32.dp)
             )
 
-            // Name input
+            // Trường nhập Full Name
             OutlinedTextField(
                 value = name,
                 onValueChange = { name = it },
-                label = { Text("Full Name") },
+                label = { Text("Họ tên") },
                 leadingIcon = { Icon(Icons.Default.Person, "Name Icon") },
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Text,
@@ -80,10 +86,13 @@ fun SignUpScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Email input
+            // Trường nhập Email
             OutlinedTextField(
                 value = email,
-                onValueChange = { email = it },
+                onValueChange = {
+                    email = it
+                    emailError = if (isValidEmail(email)) "" else "Vui lòng nhập đúng định dạng Email"
+                },
                 label = { Text("Email") },
                 leadingIcon = { Icon(Icons.Default.Email, "Email Icon") },
                 keyboardOptions = KeyboardOptions(
@@ -91,16 +100,30 @@ fun SignUpScreen(
                     imeAction = ImeAction.Next
                 ),
                 singleLine = true,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                isError = emailError.isNotEmpty() // Hiển thị trạng thái lỗi khi cần
             )
+
+            // Hiển thị lỗi email (nếu có)
+            if (emailError.isNotEmpty()) {
+                Text(
+                    text = emailError,
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.align(Alignment.Start)
+                )
+            }
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Password input
+            // Trường nhập Password
             OutlinedTextField(
                 value = password,
-                onValueChange = { password = it },
-                label = { Text("Password") },
+                onValueChange = {
+                    password = it
+                    passwordError = if (isValidPassword(password)) "" else "Mật khẩu phải có ít nhất 6 ký tự, bao gồm chữ hoa, chữ thường và số"
+                },
+                label = { Text("Mật khẩu") },
                 leadingIcon = { Icon(Icons.Default.Lock, "Password Icon") },
                 trailingIcon = {
                     IconButton(onClick = { showPassword = !showPassword }) {
@@ -120,38 +143,60 @@ fun SignUpScreen(
                     imeAction = ImeAction.Done
                 ),
                 singleLine = true,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                isError = passwordError.isNotEmpty() // Hiển thị trạng thái lỗi khi cần
             )
+
+            // Hiển thị lỗi mật khẩu (nếu có)
+            if (passwordError.isNotEmpty()) {
+                Text(
+                    text = passwordError,
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.align(Alignment.Start)
+                )
+            }
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Sign Up button
+            // Nút Sign Up
             Button(
                 onClick = {
-                    viewModel.signUp(name, email, password, context)
+                    when {
+                        !isValidEmail(email) -> {
+                            Toast.makeText(context, "Vui lòng nhập đúng định dạng Email", Toast.LENGTH_SHORT).show()
+                        }
+                        !isValidPassword(password) -> {
+                            Toast.makeText(context, "Mật khẩu phải có ít nhất 6 ký tự, bao gồm chữ hoa, chữ thường và số", Toast.LENGTH_SHORT).show()
+                        }
+                        else -> {
+                            // Nếu cả email và mật khẩu hợp lệ, gọi ViewModel để đăng ký
+                            viewModel.signUp(name, email, password, context)
+                        }
+                    }
                 },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(50.dp)
             ) {
-                Text("Sign Up", style = MaterialTheme.typography.titleMedium)
+                Text("Đăng ký", style = MaterialTheme.typography.titleMedium)
             }
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Login Row
+            // Row chuyển đến màn hình đăng nhập
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text("Already have an account?", color = Color.Gray)
+                Text("Bạn đã có tài khoản?", color = Color.Gray)
                 TextButton(onClick = onLoginClick) {
-                    Text("Login")
+                    Text("Đăng nhập")
                 }
             }
 
-            // Error message
+            // Hiển thị lỗi từ ViewModel (nếu có)
             signUpState.error?.let { error ->
                 Text(
                     text = error,
@@ -169,12 +214,23 @@ fun SignUpScreen(
             )
         }
 
-        // Success handling
+        // Xử lý khi đăng ký thành công
         if (signUpState.success != null) {
             LaunchedEffect(signUpState.success) {
-                Toast.makeText(context, "Sign up successful!", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "Đăng ký thành công!", Toast.LENGTH_SHORT).show()
                 onSignUpSuccess()
             }
         }
     }
+}
+
+// Hàm kiểm tra email hợp lệ
+fun isValidEmail(email: String): Boolean {
+    return Patterns.EMAIL_ADDRESS.matcher(email).matches()
+}
+
+// Hàm kiểm tra mật khẩu hợp lệ
+fun isValidPassword(password: String): Boolean {
+    val passwordRegex = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).{6,}$".toRegex()
+    return passwordRegex.matches(password)
 }

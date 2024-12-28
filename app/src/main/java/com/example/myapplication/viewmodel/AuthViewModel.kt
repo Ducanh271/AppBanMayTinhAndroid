@@ -6,7 +6,6 @@ import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.myapplication.data.api.ApiService
-import com.example.myapplication.data.models.CreateCartRequest
 import com.example.myapplication.data.repository.AuthRepository
 import com.example.myapplication.utils.SharedPrefUtils
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -61,12 +60,12 @@ class AuthViewModel(private val repository: AuthRepository) : ViewModel() {
                 try {
                     createCartForUser(userId)
                     _signUpState.value = SignUpState(success = userId)
-                    Toast.makeText(context, "Registration and cart creation successful!", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, "Đăng ký thành công", Toast.LENGTH_SHORT).show()
                 } catch (e: Exception) {
                     Log.e("Cart", "Failed to create cart: ${e.message}")
                     // Nếu tạo giỏ hàng thất bại, vẫn giữ tài khoản nhưng thông báo lỗi
                     _signUpState.value = SignUpState(success = userId)
-                    Toast.makeText(context, "Account created but failed to create cart", Toast.LENGTH_LONG).show()
+                    Toast.makeText(context, "Khởi tao gior hàng thất bại", Toast.LENGTH_LONG).show()
                 }
 
             } catch (e: Exception) {
