@@ -32,6 +32,11 @@ fun MainScreen(
 ) {
     val context = LocalContext.current // Đưa LocalContext ra ngoài phạm vi @Composable
 
+    // Trạng thái cho ScrollableTabRow
+    var selectedTabTopRow by remember { mutableStateOf(0) }
+    // Trạng thái cho BottomNavigationBar
+    var selectedTabBottomBar by remember { mutableStateOf(0) }
+
     var selectedTab by remember { mutableStateOf(0) }
     var searchQuery by remember { mutableStateOf("") }
     val categories by viewModel.categories.collectAsState()
@@ -57,7 +62,7 @@ fun MainScreen(
                                     searchQuery = query
                                     viewModel.searchProducts(query)
                                 },
-                                placeholder = { Text("Search products...") },
+                                placeholder = { Text("Nhập sản phẩm ...") },
                                 singleLine = true,
                                 leadingIcon = {
                                     Icon(Icons.Default.Search, contentDescription = "Search Icon")
@@ -82,12 +87,13 @@ fun MainScreen(
 
                 if (categories.isNotEmpty()) {
                     val allCategories = listOf("All") + categories
-                    ScrollableTabRow(selectedTabIndex = selectedTab, edgePadding = 8.dp) {
+                    ScrollableTabRow(selectedTabIndex = selectedTabTopRow, edgePadding = 8.dp) {
+
                         allCategories.forEachIndexed { index, category ->
                             Tab(
-                                selected = selectedTab == index,
+                                selected = selectedTabTopRow == index,
                                 onClick = {
-                                    selectedTab = index
+                                    selectedTabTopRow = index
                                     if (category == "All") {
                                         viewModel.fetchProducts()
                                     } else {
@@ -106,6 +112,7 @@ fun MainScreen(
         bottomBar = {
             BottomNavigationBar(selectedTab) { newTab ->
                 selectedTab = newTab
+
             }
         }
     ) { innerPadding ->
