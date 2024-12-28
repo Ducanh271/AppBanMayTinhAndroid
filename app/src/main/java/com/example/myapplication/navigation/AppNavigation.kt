@@ -10,6 +10,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.example.myapplication.data.models.AddToCartRequest
 import com.example.myapplication.ui.screens.*
 import com.example.myapplication.utils.SharedPrefUtils
 import com.example.myapplication.utils.LocalUserId
@@ -115,6 +116,16 @@ fun AppNavigation(
                             onBack = { navController.popBackStack() },
                             onBuyNow = { selectedProduct ->
                                 navController.navigate("checkout/${selectedProduct.id}")
+                            },
+                            onAddToCart = { product, quantity ->
+                                if (userId != null) {
+                                    val request = AddToCartRequest(userId, product.id, quantity)
+                                    cartViewModel.addToCart(request) { message ->
+                                        println("Response: $message")
+                                    }
+                                } else {
+                                    println("UserID is null. Please login.")
+                                }
                             }
                         )
                     } else {

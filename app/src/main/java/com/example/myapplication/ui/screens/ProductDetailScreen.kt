@@ -10,6 +10,11 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
@@ -18,16 +23,32 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.rememberAsyncImagePainter
 import com.example.myapplication.data.models.Product
+import com.example.myapplication.ui.components.QuantityDialog
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProductDetailScreen(
     product: Product,
     onBack: () -> Unit,
-    onBuyNow: (Product) -> Unit
+    onBuyNow: (Product) -> Unit,
+    onAddToCart: (Product, Int) -> Unit, // Callback để xử lý thêm sản phẩm vào giỏ hàng
 ) {
     val context = LocalContext.current
-
+    var showDialog by remember { mutableStateOf(false) }
+    val snackbarHostState = remember { SnackbarHostState() }
+    var snackbarMessage by remember { mutableStateOf("") } // Trạng thái để lưu thông báo
+    // Hiển thị dialog khi cần
+    if (showDialog) {
+        QuantityDialog(
+            product = product,
+            onDismiss = { showDialog = false },
+            onConfirm = { quantity ->
+                onAddToCart(product, quantity)
+                snackbarMessage = "Đã thêm sản phẩm ${product.title} vào giỏ hàng"
+                showDialog = false
+            }
+        )
+    }
     fun showToast(context: Context, message: String) {
         Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
     }
@@ -111,14 +132,23 @@ fun ProductDetailScreen(
                 }
                 Spacer(modifier = Modifier.width(8.dp))
                 Button(
-                    onClick = {
-                        showToast(context, "Đã thêm sản phẩm vào giỏ hàng!")
-                    },
+                    onClick = { showDialog = true },
                     modifier = Modifier.weight(1f),
                     shape = RoundedCornerShape(8.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)
                 ) {
                     Text("Thêm vào giỏ hàng")
+                }
+            }
+            // Hiển thị Snackbar khi có thông báo
+            SnackbarHost(
+                hostState = snackbarHostState,
+                modifier = Modifier.align(Alignment.BottomCenter)
+            )
+            LaunchedEffect(snackbarMessage) {
+                if (snackbarMessage.isNotEmpty()) {
+                    snackbarHostState.showSnackbar(snackbarMessage)
+                    snackbarMessage = "" // Xóa thông báo sau khi hiển thị
                 }
             }
         }
