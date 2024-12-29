@@ -16,6 +16,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import coil.compose.rememberAsyncImagePainter
 import com.example.myapplication.data.models.Product
 
@@ -101,14 +102,31 @@ fun CheckoutScreen(product: Product, onBack: () -> Unit) {
                 label = { Text("Địa chỉ nhận hàng") },
                 modifier = Modifier.fillMaxWidth()
             )
-            OutlinedTextField(
-                value = messageToShop,
-                onValueChange = { messageToShop = it },
-                label = { Text("Lời nhắn cho shop bán hàng") },
-                modifier = Modifier.fillMaxWidth()
-            )
+//            OutlinedTextField(
+//                value = messageToShop,
+//                onValueChange = { messageToShop = it },
+//                label = { Text("Lời nhắn cho shop bán hàng") },
+//                modifier = Modifier.fillMaxWidth()
+//            )
 
             Spacer(modifier = Modifier.height(16.dp))
+
+
+            Button(
+                onClick = {
+                    toastMsg(
+                        context = context,
+                        msg = "Thanh toán bằng ZaloPay!"
+                    )
+                },
+                modifier = Modifier.fillMaxWidth().height(45.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1E88E5)), // Màu xanh cho ZaloPay
+                shape = RoundedCornerShape(6.dp),
+            ) {
+                Text(text="Thanh toán bằng ZaloPay",
+                    fontSize = 17.sp,
+                    color = Color.White)
+            }
 
             // 4. Nút thanh toán
             Button(
@@ -118,11 +136,13 @@ fun CheckoutScreen(product: Product, onBack: () -> Unit) {
                         msg = "Đã xác nhận thanh toán!"
                     )
                 },
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth().height(45.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF9800)),
                 shape = RoundedCornerShape(6.dp),
             ) {
-                Text("Thanh toán")
+                Text(text="Thanh toán khi nhận hàng",
+                    fontSize = 17.sp,
+                    color = Color.White)
             }
         }
     }

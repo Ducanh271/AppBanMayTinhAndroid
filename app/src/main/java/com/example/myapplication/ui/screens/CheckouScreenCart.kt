@@ -4,6 +4,7 @@ import android.content.Context
 import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -13,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.myapplication.data.models.CartItem
 import com.example.myapplication.viewmodel.CartViewModel
 import java.text.NumberFormat
@@ -83,7 +85,7 @@ fun CheckoutScreenCart(
                 )
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
             // Form nhập thông tin
             Text("Nhập thông tin thanh toán", style = MaterialTheme.typography.titleMedium)
@@ -109,9 +111,29 @@ fun CheckoutScreenCart(
                 modifier = Modifier.fillMaxWidth()
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(5.dp))
 
-            // Nút thanh toán
+            // Nút "Thanh toán bằng ZaloPay"
+            Button(
+                onClick = {
+                    toastMsg(
+                        context = context,
+                        msg = "Thanh toán bằng ZaloPay!"
+                    )
+                },
+                modifier = Modifier.fillMaxWidth().height(45.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1E88E5)), // Màu xanh cho ZaloPay
+                shape = RoundedCornerShape(6.dp),
+            ) {
+                Text(
+                    text ="Thanh toán bằng ZaloPay",
+                    fontSize = 17.sp,
+                    color = Color.White)
+            }
+
+
+
+            // Nút "Thanh toán"
             Button(
                 onClick = {
                     toastMsg(
@@ -119,10 +141,15 @@ fun CheckoutScreenCart(
                         msg = "Đã xác nhận thanh toán!"
                     )
                 },
-                modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF9800))
+                modifier = Modifier.fillMaxWidth().height(45.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF9800)),
+                shape = RoundedCornerShape(6.dp),
             ) {
-                Text("Thanh toán")
+                Text(
+                    text ="Thanh toán khi nhận hàng",
+                    fontSize = 17.sp,
+                    color = Color.White
+                )
             }
         }
     }

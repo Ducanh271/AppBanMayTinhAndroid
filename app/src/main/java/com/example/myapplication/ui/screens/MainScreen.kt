@@ -25,25 +25,13 @@ import com.example.myapplication.viewmodel.CartViewModel
 fun MainScreen(
     viewModel: ProductViewModel,
     onProductClick: (Product) -> Unit,
-    cartViewModel: CartViewModel, // Thêm tham số này
+    cartViewModel: CartViewModel,
     navController: NavController,
-    authViewModel: AuthViewModel,
-
+    authViewModel: AuthViewModel
 ) {
-    val context = LocalContext.current // Đưa LocalContext ra ngoài phạm vi @Composable
-
-    // Trạng thái cho ScrollableTabRow
-    var selectedTabTopRow by remember { mutableStateOf(0) }
-    // Trạng thái cho BottomNavigationBar
-    var selectedTabBottomBar by remember { mutableStateOf(0) }
-
+    val context = LocalContext.current
     var selectedTab by remember { mutableStateOf(0) }
-    var searchQuery by remember { mutableStateOf("") }
-    val categories by viewModel.categories.collectAsState()
 
-    LaunchedEffect(Unit) {
-        viewModel.fetchCategories()
-    }
     Scaffold(
         topBar = {
             Column {
@@ -53,73 +41,59 @@ fun MainScreen(
                             modifier = Modifier.fillMaxWidth(),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            IconButton(onClick = { /* TODO: Thêm menu logic */ }) {
+                            IconButton(onClick = { /* TODO: Menu logic */ }) {
                                 Icon(Icons.Default.Menu, contentDescription = "Menu")
                             }
                             OutlinedTextField(
-                                value = searchQuery,
+                                value = "",
                                 onValueChange = { query ->
-                                    searchQuery = query
                                     viewModel.searchProducts(query)
                                 },
-                                placeholder = { Text("Nhập sản phẩm ...") },
+                                placeholder = { Text("Nhập sản phẩm...") },
                                 singleLine = true,
                                 leadingIcon = {
                                     Icon(Icons.Default.Search, contentDescription = "Search Icon")
                                 },
                                 modifier = Modifier.weight(1f)
                             )
-                            IconButton(onClick = {  navController.navigate("cart") }) {
+                            IconButton(onClick = { navController.navigate("cart") }) {
                                 Icon(Icons.Default.ShoppingCart, contentDescription = "Cart")
                             }
-                            IconButton(
-                                onClick = {
-                                    // Sử dụng authViewModel để xử lý đăng xuất thay vì trực tiếp
-                                    authViewModel.logout(context)
-                                    // Navigation sẽ được xử lý tự động bởi LaunchedEffect trong AppNavigation
-                                }
-                            ) {
+                            IconButton(onClick = {
+                                authViewModel.logout(context)
+                            }) {
                                 Icon(Icons.Default.Logout, contentDescription = "Logout")
                             }
                         }
                     }
                 )
-
-                if (categories.isNotEmpty()) {
-                    val allCategories = listOf("All") + categories
-                    ScrollableTabRow(selectedTabIndex = selectedTabTopRow, edgePadding = 8.dp) {
-
-                        allCategories.forEachIndexed { index, category ->
-                            Tab(
-                                selected = selectedTabTopRow == index,
-                                onClick = {
-                                    selectedTabTopRow = index
-                                    if (category == "All") {
-                                        viewModel.fetchProducts()
-                                    } else {
-                                        viewModel.fetchProductsByCategory(category)
-                                    }
-                                },
-                                text = { Text(category) }
-                            )
-                        }
-                    }
-                } else {
-                    LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
-                }
             }
         },
         bottomBar = {
-            BottomNavigationBar(selectedTab) { newTab ->
-                selectedTab = newTab
-
-            }
+            BottomNavigationBar(
+                selectedTab = selectedTab,
+                onTabSelected = { selectedTab = it },
+                navController = navController // Truyền NavController vào
+            )
         }
     ) { innerPadding ->
         Box(modifier = Modifier.padding(innerPadding)) {
-            ProductListScreen(viewModel = viewModel,
-                cartViewModel = cartViewModel,
-                onProductClick = onProductClick)
+            when (selectedTab) {
+                0 -> {
+                    ProductListScreen(
+                        viewModel = viewModel,
+                        cartViewModel = cartViewModel,
+                        onProductClick = onProductClick
+                    )
+                }
+                3 -> {
+                    CheckoutScreenCart(
+                        viewModel = cartViewModel,
+                        onBack = { navController.navigateUp() }
+                    )
+                }
+                // Xử lý các tab khác ở đây
+            }
         }
     }
 }
