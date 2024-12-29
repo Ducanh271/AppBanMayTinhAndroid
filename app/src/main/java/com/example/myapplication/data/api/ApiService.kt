@@ -1,5 +1,6 @@
 package com.example.myapplication.data.api
 
+import OrderApi
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
@@ -28,5 +29,11 @@ object ApiService {
     // API cho Cart
     val cartApi: CartApi by lazy {
         retrofit.create(CartApi::class.java)
+    }
+
+    //API cho Orders
+
+    val orderApi: OrderApi by lazy {
+        retrofit.create(OrderApi::class.java)
     }
 }

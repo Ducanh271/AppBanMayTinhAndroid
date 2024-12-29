@@ -1,5 +1,6 @@
 package com.example.myapplication.ui.screens
 
+import OrderApi
 import android.content.Context
 import android.widget.Toast
 import androidx.compose.foundation.Image
@@ -18,7 +19,17 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.rememberAsyncImagePainter
+import com.example.myapplication.data.api.ApiService
+import com.example.myapplication.data.models.OrderItem
+import com.example.myapplication.data.models.OrderRequest
 import com.example.myapplication.data.models.Product
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import androidx.compose.runtime.Composable
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.myapplication.data.repository.AuthRepository
+import com.example.myapplication.utils.SharedPrefUtils
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -26,19 +37,42 @@ fun CheckoutScreen(product: Product, onBack: () -> Unit) {
     var recipientName by remember { mutableStateOf("") }
     var recipientPhone by remember { mutableStateOf("") }
     var recipientAddress by remember { mutableStateOf("") }
-    var messageToShop by remember { mutableStateOf("") }
-
     val context = LocalContext.current
+    val userId = SharedPrefUtils.getUserId(context)
+    val scope = rememberCoroutineScope() // Để sử dụng coroutine trong Composable
+    val authRepository = AuthRepository(ApiService.userApi) // Khởi tạo AuthRepository
 
-    fun toastMsg(
-        context: Context,
-        msg: String
+
+
+    // Hàm xử lý logic thanh toán khi nhận hàng
+    suspend fun handleCashOnDeliveryPayment(
+        userId: String,
+        product: Product,
+        recipientAddress: String,
+        recipientPhone: String,
+        context: Context
     ) {
-        Toast.makeText(
-            context,
-            msg,
-            Toast.LENGTH_SHORT
-        ).show()
+        val orderRequest = OrderRequest(
+            userId = userId,
+            items = listOf(OrderItem(productId = product.id, quantity = 1)),
+            address = recipientAddress,
+            phoneNumber = recipientPhone
+        )
+
+        try {
+            // Sử dụng withContext để chuyển sang dispatcher IO cho việc gọi API
+            val response = withContext(Dispatchers.IO) {
+                ApiService.orderApi.createOrder(orderRequest)
+            }
+
+            if (response.isSuccessful) {
+                Toast.makeText(context, "Đặt hàng thành công! Mã đơn: ${response.body()?.orderId}", Toast.LENGTH_LONG).show()
+            } else {
+                Toast.makeText(context, "Đặt hàng thất bại: ${response.message()}", Toast.LENGTH_LONG).show()
+            }
+        } catch (e: Exception) {
+            Toast.makeText(context, "Lỗi mạng: ${e.message}", Toast.LENGTH_LONG).show()
+        }
     }
 
     Scaffold(
@@ -53,13 +87,12 @@ fun CheckoutScreen(product: Product, onBack: () -> Unit) {
             )
         }
     ) { innerPadding ->
-        // Sử dụng verticalScroll để có thể cuộn nội dung
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
                 .padding(16.dp)
-                .verticalScroll(rememberScrollState()), // Thêm khả năng cuộn
+                .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             // 1. Ảnh sản phẩm
@@ -87,7 +120,6 @@ fun CheckoutScreen(product: Product, onBack: () -> Unit) {
                 onValueChange = { recipientName = it },
                 label = { Text("Họ và Tên người nhận") },
                 modifier = Modifier.fillMaxWidth()
-
             )
             OutlinedTextField(
                 value = recipientPhone,
@@ -102,47 +134,36 @@ fun CheckoutScreen(product: Product, onBack: () -> Unit) {
                 label = { Text("Địa chỉ nhận hàng") },
                 modifier = Modifier.fillMaxWidth()
             )
-//            OutlinedTextField(
-//                value = messageToShop,
-//                onValueChange = { messageToShop = it },
-//                label = { Text("Lời nhắn cho shop bán hàng") },
-//                modifier = Modifier.fillMaxWidth()
-//            )
 
             Spacer(modifier = Modifier.height(16.dp))
 
-
+            // Nút Thanh toán khi nhận hàng
             Button(
                 onClick = {
-                    toastMsg(
-                        context = context,
-                        msg = "Thanh toán bằng ZaloPay!"
-                    )
-                },
-                modifier = Modifier.fillMaxWidth().height(45.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1E88E5)), // Màu xanh cho ZaloPay
-                shape = RoundedCornerShape(6.dp),
-            ) {
-                Text(text="Thanh toán bằng ZaloPay",
-                    fontSize = 17.sp,
-                    color = Color.White)
-            }
-
-            // 4. Nút thanh toán
-            Button(
-                onClick = {
-                    toastMsg(
-                        context = context,
-                        msg = "Đã xác nhận thanh toán!"
-                    )
+                    if (recipientName.isNotEmpty() && recipientPhone.isNotEmpty() && recipientAddress.isNotEmpty()) {
+                        if (userId != null) {  // Kiểm tra nếu userId đã có
+                            // Gọi coroutine để xử lý thanh toán khi nhận hàng
+                            scope.launch {
+                                handleCashOnDeliveryPayment(
+                                    userId = userId, // Thay bằng ID người dùng thực tế
+                                    product = product,
+                                    recipientAddress = recipientAddress,
+                                    recipientPhone = recipientPhone,
+                                    context = context
+                                )
+                            }
+                        } else {
+                            Toast.makeText(context, "Vui lòng đăng nhập trước!", Toast.LENGTH_SHORT).show()
+                        }
+                    } else {
+                        Toast.makeText(context, "Vui lòng nhập đầy đủ thông tin!", Toast.LENGTH_SHORT).show()
+                    }
                 },
                 modifier = Modifier.fillMaxWidth().height(45.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF9800)),
                 shape = RoundedCornerShape(6.dp),
             ) {
-                Text(text="Thanh toán khi nhận hàng",
-                    fontSize = 17.sp,
-                    color = Color.White)
+                Text(text = "Thanh toán khi nhận hàng", fontSize = 17.sp, color = Color.White)
             }
         }
     }
