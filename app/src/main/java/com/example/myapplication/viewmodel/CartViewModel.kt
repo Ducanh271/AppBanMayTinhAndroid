@@ -77,7 +77,7 @@ class CartViewModel(private val cartRepository: CartRepository) : ViewModel() {
                 else item
             }
             _cartState.value = cart.copy(items = updatedItems)
-        }
+        }   
     }
     fun calculateTotalPrice(): Double {
         return _cartState.value?.items?.sumOf { it.total } ?: 0.0

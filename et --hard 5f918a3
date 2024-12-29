@@ -1,0 +1,22 @@
+[33m1f085e3[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m update lại thanh tìm kiếm ở MainScreen nhập không được chữ - đã fix
+[33m6a6b8f5[m  ấn nút giỏ hàng dưới bottomnavigation vào giỏ hàng
+[33mc12fb4d[m sửa bo góc nút thanh toán cart và đổi chữ tiếng việt
+[33me505ab4[m giaodien thanh toan tu carrt
+[33mc02e995[m Merge remote-tracking branch 'origin/main'
+[33m9833899[m đăng ký yêu cầu đúng định dạng email, mật khẩu tối thiểu 6 ký tự có bao gồm chữ in hoa,chữ thường,số fix lỗi hiển thị giỏ hàng
+[33m5f918a3[m push gio hang trong detail
+[33m24fed3a[m xongg buton gio hangf trong product detail screen
+[33m58a4903[m sua lỗi 2 thanh trên dưới đều trượt
+[33mccdb8f9[m sua loi gio hang
+[33m647a46d[m Gần xong giỏ hàng
+[33ma500add[m Code xong giao diện và chức năng thêm giỏ hàng, cập nhật lại 1 số file, ae nên pull về để merge
+[33m3d8ee3d[m push lỗi lần 1
+[33m5666877[m xoa code tesst thua AppNavigation
+[33m4e5fc44[m giaodienthanhtoan
+[33m1bf07c8[m them goi y luu tai khoan va goi y tai khoan da luu sua lai giao dien login signup
+[33mc7c0429[m Merge remote-tracking branch 'origin/main'
+[33m82c4d49[m dang ky va khoi tao gio hang
+[33m6212882[m lỗi logout, giỏi hàng 25%
+[33m91657ea[m dang ky va khoi tao gio hang
+[33ma1d318f[m Dang ky tai khoan va khoi tao gio hang
+[33m63bc524[m lan dau lam app

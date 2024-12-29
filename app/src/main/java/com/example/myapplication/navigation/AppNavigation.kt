@@ -18,12 +18,15 @@ import com.example.myapplication.viewmodel.AuthViewModel
 import com.example.myapplication.viewmodel.CartViewModel
 import com.example.myapplication.viewmodel.ProductViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel // Thêm import này
+import com.example.myapplication.data.models.Order
+import com.example.myapplication.viewmodel.OrderViewModel
 
 @Composable
 fun AppNavigation(
     navController: NavHostController,
     viewModel: ProductViewModel,
     authViewModel: AuthViewModel,
+    orderViewModel: OrderViewModel,
     cartViewModel: CartViewModel = viewModel() // Khởi tạo CartViewModel với viewModel()
 ) {
     // Lấy context hiện tại
@@ -157,6 +160,7 @@ fun AppNavigation(
                 Box(modifier = Modifier.fillMaxSize()) {
                     if (product != null) {
                         CheckoutScreen(
+                            orderViewModel = orderViewModel,
                             product = product!!,
                             onBack = { navController.popBackStack() }
                         )

@@ -17,10 +17,13 @@ import com.example.myapplication.viewmodel.ProductViewModel
 import com.example.myapplication.viewmodel.ProductViewModelFactory
 import com.example.myapplication.viewmodel.CartViewModel
 import com.example.myapplication.viewmodel.CartViewModelFactory
+import com.example.myapplication.viewmodel.OrderViewModel
+import com.example.myapplication.viewmodel.OrderViewModelFactory
+import com.example.myapplication.data.repository.OrdersRepository
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
+        val ordersRepository  = OrdersRepository(ApiService.orderApi)
         val productRepository = ProductRepository(ApiService.productApi)
         val authRepository = AuthRepository(ApiService.userApi)
         val cartRepository = CartRepository(ApiService.cartApi)
@@ -35,6 +38,9 @@ class MainActivity : ComponentActivity() {
             val cardViewModel: CartViewModel = viewModel(
                 factory = CartViewModelFactory(cartRepository)
             )
+            val orderViewModel: OrderViewModel = viewModel(
+                factory = OrderViewModelFactory(ordersRepository)
+            )
 
             LaunchedEffect(Unit) {
                 authViewModel.checkLoginStatus(this@MainActivity)
@@ -45,7 +51,8 @@ class MainActivity : ComponentActivity() {
                 navController = navController,
                 viewModel = productViewModel,
                 authViewModel = authViewModel,
-                cartViewModel = cardViewModel
+                cartViewModel = cardViewModel,
+                orderViewModel = orderViewModel
             )
         }
     }
