@@ -37,13 +37,21 @@ import com.example.myapplication.viewmodel.OrderViewModel
 fun CheckoutScreen(
     orderViewModel: OrderViewModel,
     product: Product,
-    onBack: () -> Unit) {
+    onBack: () -> Unit
+) {
     var recipientName by remember { mutableStateOf("") }
     var recipientPhone by remember { mutableStateOf("") }
     var recipientAddress by remember { mutableStateOf("") }
     val context = LocalContext.current
     val userId = SharedPrefUtils.getUserId(context)
     val scope = rememberCoroutineScope() // Để sử dụng coroutine trong Composable
+
+    fun toastMsg(
+        context: Context,
+        msg: String
+    ) {
+        Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+    }
 
     Scaffold(
         topBar = {
@@ -106,6 +114,24 @@ fun CheckoutScreen(
             )
 
             Spacer(modifier = Modifier.height(16.dp))
+
+            // Nút "Thanh toán bằng ZaloPay"
+            Button(
+                onClick = {
+                    toastMsg(
+                        context = context,
+                        msg = "Thanh toán bằng ZaloPay!"
+                    )
+                },
+                modifier = Modifier.fillMaxWidth().height(45.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1E88E5)), // Màu xanh cho ZaloPay
+                shape = RoundedCornerShape(6.dp),
+            ) {
+                Text(
+                    text ="Thanh toán bằng ZaloPay",
+                    fontSize = 17.sp,
+                    color = Color.White)
+            }
 
             // Nút Thanh toán khi nhận hàng
             Button(

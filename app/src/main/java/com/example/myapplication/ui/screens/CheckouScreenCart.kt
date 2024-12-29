@@ -15,29 +15,31 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.myapplication.data.models.CartItem
+import com.example.myapplication.data.models.OrderItem
+import com.example.myapplication.utils.SharedPrefUtils
 import com.example.myapplication.viewmodel.CartViewModel
+import com.example.myapplication.viewmodel.OrderViewModel
+import kotlinx.coroutines.launch
 import java.text.NumberFormat
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CheckoutScreenCart(
     viewModel: CartViewModel,
+    orderViewModel: OrderViewModel, // Thêm OrderViewModel
     onBack: () -> Unit
 ) {
     val context = LocalContext.current
     val cartState = viewModel.cartState.collectAsState().value
     val totalPrice = viewModel.calculateTotalPrice()
+    val userId = SharedPrefUtils.getUserId(context) // Lấy userId từ SharedPreferences
+    val scope = rememberCoroutineScope() // Sử dụng coroutine trong Composable
 
     var recipientName by remember { mutableStateOf("") }
     var recipientPhone by remember { mutableStateOf("") }
     var recipientAddress by remember { mutableStateOf("") }
-    var messageToShop by remember { mutableStateOf("") }
 
-    fun toastMsg(
-        context: Context,
-        msg: String
-    ) {
+    fun toastMsg(context: Context, msg: String) {
         Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
     }
 
@@ -58,7 +60,7 @@ fun CheckoutScreenCart(
                 .fillMaxSize()
                 .padding(innerPadding)
                 .padding(16.dp)
-                .verticalScroll(rememberScrollState()), // Thêm khả năng cuộn
+                .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             // Tổng giá tiền
@@ -77,7 +79,6 @@ fun CheckoutScreenCart(
                 style = MaterialTheme.typography.titleMedium
             )
             cartState?.items?.forEach { cartItem ->
-                // Hiển thị tên sản phẩm, số lượng và giá
                 val formattedPrice = NumberFormat.getCurrencyInstance().format(cartItem.price)
                 Text(
                     text = "- ${cartItem.title} (Số lượng: ${cartItem.quantity}, Giá: $formattedPrice)",
@@ -111,46 +112,49 @@ fun CheckoutScreenCart(
                 modifier = Modifier.fillMaxWidth()
             )
 
-            Spacer(modifier = Modifier.height(5.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-            // Nút "Thanh toán bằng ZaloPay"
+            // Nút "Thanh toán khi nhận hàng"
             Button(
                 onClick = {
-                    toastMsg(
-                        context = context,
-                        msg = "Thanh toán bằng ZaloPay!"
-                    )
-                },
-                modifier = Modifier.fillMaxWidth().height(45.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1E88E5)), // Màu xanh cho ZaloPay
-                shape = RoundedCornerShape(6.dp),
-            ) {
-                Text(
-                    text ="Thanh toán bằng ZaloPay",
-                    fontSize = 17.sp,
-                    color = Color.White)
-            }
+                    if (recipientName.isNotEmpty() && recipientPhone.isNotEmpty() && recipientAddress.isNotEmpty()) {
+                        if (userId != null) {
+                            scope.launch {
+                                try {
+                                    // Chuyển đổi từ CartItem sang OrderItem
+                                    val orderItems = cartState?.items?.map { cartItem ->
+                                        OrderItem(
+                                            productId = cartItem.productId, // Hoặc thuộc tính tương ứng của OrderItem
+                                            quantity = cartItem.quantity
+                                        )
+                                    } ?: emptyList()
 
-
-
-            // Nút "Thanh toán"
-            Button(
-                onClick = {
-                    toastMsg(
-                        context = context,
-                        msg = "Đã xác nhận thanh toán!"
-                    )
+                                    // Gửi thông tin đơn hàng lên server
+                                    orderViewModel.handleCartCashOnDeliveryPayment(
+                                        userId = userId,
+                                        orderItems = orderItems, // Đây là List<OrderItem>
+                                        recipientPhone = recipientPhone,
+                                        recipientAddress = recipientAddress,
+                                        context = context,
+                                    )
+                                } catch (e: Exception) {
+                                    toastMsg(context, "Đặt hàng thất bại: ${e.message}")
+                                }
+                            }
+                        } else {
+                            toastMsg(context, "Vui lòng đăng nhập trước!")
+                        }
+                    } else {
+                        toastMsg(context, "Vui lòng nhập đầy đủ thông tin!")
+                    }
                 },
                 modifier = Modifier.fillMaxWidth().height(45.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF9800)),
                 shape = RoundedCornerShape(6.dp),
             ) {
-                Text(
-                    text ="Thanh toán khi nhận hàng",
-                    fontSize = 17.sp,
-                    color = Color.White
-                )
+                Text(text = "Thanh toán khi nhận hàng", fontSize = 17.sp, color = Color.White)
             }
+
         }
     }
 }

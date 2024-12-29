@@ -145,6 +145,7 @@ fun AppNavigation(
             composable("checkout_cart") {
                 CheckoutScreenCart(
                     viewModel = cartViewModel, // Truyền cartViewModel vào đây
+                    orderViewModel = orderViewModel, // Thêm orderViewModel vào
                     onBack = { navController.popBackStack() }
                 )
             }
