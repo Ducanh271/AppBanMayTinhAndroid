@@ -15,7 +15,6 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.myapplication.ui.components.BottomNavigationBar
 import com.example.myapplication.viewmodel.ProductViewModel
-import com.example.myapplication.utils.SharedPrefUtils
 import com.example.myapplication.data.models.Product
 import com.example.myapplication.viewmodel.AuthViewModel
 import com.example.myapplication.viewmodel.CartViewModel
@@ -31,6 +30,7 @@ fun MainScreen(
 ) {
     val context = LocalContext.current
     var selectedTab by remember { mutableStateOf(0) }
+    var searchQuery by remember { mutableStateOf("") } // Trạng thái lưu chuỗi tìm kiếm
 
     Scaffold(
         topBar = {
@@ -45,9 +45,10 @@ fun MainScreen(
                                 Icon(Icons.Default.Menu, contentDescription = "Menu")
                             }
                             OutlinedTextField(
-                                value = "",
+                                value = searchQuery, // Liên kết trạng thái với TextField
                                 onValueChange = { query ->
-                                    viewModel.searchProducts(query)
+                                    searchQuery = query
+                                    viewModel.searchProducts(query) // Tìm kiếm sản phẩm khi nhập
                                 },
                                 placeholder = { Text("Nhập sản phẩm...") },
                                 singleLine = true,
@@ -73,7 +74,7 @@ fun MainScreen(
             BottomNavigationBar(
                 selectedTab = selectedTab,
                 onTabSelected = { selectedTab = it },
-                navController = navController // Truyền NavController vào
+                navController = navController
             )
         }
     ) { innerPadding ->
