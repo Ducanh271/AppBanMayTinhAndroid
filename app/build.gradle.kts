@@ -43,6 +43,11 @@ android {
 }
 
 dependencies {
+
+    //zalopay implement
+    implementation("com.squareup.okhttp3:okhttp:4.6.0")
+    implementation("commons-codec:commons-codec:1.14")
+
     // Thêm các dependencies mới
     implementation("com.google.code.gson:gson:2.10.1")
     implementation("androidx.security:security-crypto:1.1.0-alpha06")
@@ -57,6 +62,12 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+
+    implementation(fileTree(mapOf(
+        "dir" to "D:\\Download\\Downloads\\app_banhangClone\\zalopay_grow\\librarry",
+        "include" to listOf("*.aar", "*.jar"),
+        "exclude" to listOf("")
+    )))
     debugImplementation(libs.androidx.ui.tooling)
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.2")
 
