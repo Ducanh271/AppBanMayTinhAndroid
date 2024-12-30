@@ -1,6 +1,6 @@
 package com.example.myapplication.data.models
 
-data class OrderResponse(
+data class CreateOrderResponse(
     val orderId: String,
     val message: String
 )

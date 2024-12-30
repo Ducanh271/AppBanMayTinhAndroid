@@ -88,13 +88,14 @@ fun MainScreen(
                 if (categories.isNotEmpty()) {
                     val allCategories = listOf("All") + categories
                     ScrollableTabRow(selectedTabIndex = selectedTabTopRow, edgePadding = 8.dp) {
-
                         allCategories.forEachIndexed { index, category ->
                             Tab(
                                 selected = selectedTabTopRow == index,
                                 onClick = {
+                                    viewModel.selectedCategory.value = category // Cập nhật selectedCategory
                                     selectedTabTopRow = index
                                     if (category == "All") {
+
                                         viewModel.fetchProducts()
                                     } else {
                                         viewModel.fetchProductsByCategory(category)

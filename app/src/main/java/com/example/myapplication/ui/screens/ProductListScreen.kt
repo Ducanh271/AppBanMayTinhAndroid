@@ -3,6 +3,7 @@ package com.example.myapplication.ui.screens
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -16,24 +17,38 @@ import com.example.myapplication.utils.LocalUserId
 import com.example.myapplication.utils.SharedPrefUtils
 import com.example.myapplication.viewmodel.CartViewModel
 import com.example.myapplication.viewmodel.ProductViewModel
+import kotlinx.coroutines.flow.filter
 
 @Composable
 fun ProductListScreen(
     viewModel: ProductViewModel,
     cartViewModel: CartViewModel,
     onProductClick: (Product) -> Unit // Callback khi nhấn vào sản phẩm
-
 ) {
     val productList by viewModel.productList.collectAsState() // Danh sách sản phẩm
     val isLoading by viewModel.isLoading.collectAsState()     // Trạng thái loading
     val errorMessage by viewModel.errorMessage.collectAsState() // Thông báo lỗi
     val context = LocalContext.current
-    val userId = SharedPrefUtils.getUserId(context)
-    // Lấy userId từ SharedPreferences
+    val userId = SharedPrefUtils.getUserId(context) // Lấy userId từ SharedPreferences
+
+    val lazyListState = rememberLazyListState() // Trạng thái cuộn của LazyColumn
 
     // Gọi fetchProducts khi màn hình được khởi chạy
     LaunchedEffect(Unit) {
         viewModel.fetchProducts()
+    }
+
+    // Theo dõi sự kiện cuộn và gọi loadNextPage
+    LaunchedEffect(lazyListState) {
+        snapshotFlow { lazyListState.layoutInfo.visibleItemsInfo.lastOrNull()?.index }
+            .filter { lastVisibleIndex ->
+                lastVisibleIndex == lazyListState.layoutInfo.totalItemsCount - 1
+            }
+            .collect {
+                if (viewModel.selectedCategory.value == "All") {
+                    viewModel.loadNextPage() // Gọi loadNextPage khi cuộn đến cuối
+                }
+            }
     }
 
     // Hiển thị UI dựa trên trạng thái hiện tại
@@ -43,8 +58,8 @@ fun ProductListScreen(
             .padding(8.dp)
     ) {
         when {
-            isLoading -> {
-                // Trạng thái đang tải dữ liệu
+            isLoading && productList.isEmpty() -> {
+                // Trạng thái đang tải dữ liệu lần đầu
                 CircularProgressIndicator(
                     modifier = Modifier.align(Alignment.Center)
                 )
@@ -70,6 +85,7 @@ fun ProductListScreen(
             else -> {
                 // Hiển thị danh sách sản phẩm
                 LazyColumn(
+                    state = lazyListState, // Gắn trạng thái cuộn
                     contentPadding = PaddingValues(8.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
@@ -77,9 +93,9 @@ fun ProductListScreen(
                         ProductItem(
                             product = product,
                             onClick = {
-                                if (!product.id.isNullOrEmpty()) { // Kiểm tra product.id trước khi gọi
+                                if (!product.id.isNullOrEmpty()) {
                                     println("Product ID: ${product.id}")
-                                    onProductClick(product) // Chỉ truyền product khi ID hợp lệ
+                                    onProductClick(product)
                                 } else {
                                     println("Error: Product ID is null for product: ${product.title}")
                                 }
@@ -95,6 +111,18 @@ fun ProductListScreen(
                                 }
                             }
                         )
+                    }
+
+                    // Hiển thị ProgressBar ở cuối danh sách khi đang tải thêm
+                    if (isLoading) {
+                        item {
+                            CircularProgressIndicator(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp)
+                                    .wrapContentWidth(Alignment.CenterHorizontally)
+                            )
+                        }
                     }
                 }
             }

@@ -26,26 +26,49 @@ class ProductViewModel(private val repository: ProductRepository) : ViewModel() 
     // Danh sách categories
     private val _categories = MutableStateFlow<List<String>>(emptyList())
     val categories: StateFlow<List<String>> = _categories
+    val selectedCategory = MutableStateFlow("All")
 
-    fun fetchProducts() {
+    // Trạng thái trang và danh sách
+    private var currentPage = 1
+
+    fun loadNextPage() {
+        if (_isLoading.value) return // Không tải nếu đang tải
+
+        _isLoading.value = true
         viewModelScope.launch {
-            _isLoading.value = true
-            _errorMessage.value = null
             try {
-                val products = repository.getProducts()
-                _productList.value = products
-                println("Fetched productList size: ${_productList.value.size}") // Thêm log
-                println("Products fetched: $products") // Thêm log này
+                val products = repository.getProducts(currentPage, limit = 10)
+                if (products.isNotEmpty()) {
+                    _productList.value = _productList.value + products
+                    currentPage++ // Tăng trang sau khi tải xong
+                } else {
+                    // Nếu không còn sản phẩm, có thể log hoặc xử lý trạng thái
+                    println("No more products to load")
+                }
             } catch (e: Exception) {
                 _errorMessage.value = "Error: ${e.message}"
-                println("Error fetching products: ${e.message}") // Thêm log lỗi này
-
             } finally {
                 _isLoading.value = false
             }
         }
-
     }
+    fun fetchProducts(page: Int = 1, limit: Int = 10) {
+        viewModelScope.launch {
+            _isLoading.value = true
+            _errorMessage.value = null
+            try {
+                val products = repository.getProducts(page = page, limit = limit)
+                _productList.value = products
+                currentPage = page + 1 // Chuẩn bị cho trang tiếp theo
+            } catch (e: Exception) {
+                _errorMessage.value = "Error: ${e.message}"
+                println("Error fetching products: ${e.message}") // Log lỗi
+            } finally {
+                _isLoading.value = false
+            }
+        }
+    }
+
     fun searchProducts(query: String) {
         viewModelScope.launch {
             _isLoading.value = true

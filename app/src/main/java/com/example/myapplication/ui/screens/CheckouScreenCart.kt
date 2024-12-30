@@ -15,7 +15,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.myapplication.data.models.OrderItem
+import com.example.myapplication.data.models.OrderItemRequest
 import com.example.myapplication.utils.SharedPrefUtils
 import com.example.myapplication.viewmodel.CartViewModel
 import com.example.myapplication.viewmodel.OrderViewModel
@@ -123,7 +123,7 @@ fun CheckoutScreenCart(
                                 try {
                                     // Chuyển đổi từ CartItem sang OrderItem
                                     val orderItems = cartState?.items?.map { cartItem ->
-                                        OrderItem(
+                                        OrderItemRequest(
                                             productId = cartItem.productId, // Hoặc thuộc tính tương ứng của OrderItem
                                             quantity = cartItem.quantity
                                         )

@@ -20,7 +20,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.rememberAsyncImagePainter
 import com.example.myapplication.data.api.ApiService
-import com.example.myapplication.data.models.OrderItem
+import com.example.myapplication.data.models.OrderItemRequest
 import com.example.myapplication.data.models.Product
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch

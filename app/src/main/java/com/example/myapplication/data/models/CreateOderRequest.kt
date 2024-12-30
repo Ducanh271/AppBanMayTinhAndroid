@@ -1,13 +1,13 @@
 package com.example.myapplication.data.models
 
-data class OrderRequest(
+data class CreateOrderRequest(
     val userId: String,
-    val items: List<OrderItem>,
+    val items: List<OrderItemRequest>,
     val address: String,
     val phoneNumber: String
 )
 
-data class OrderItem(
+data class OrderItemRequest(
     val productId: String,
     val quantity: Int
 )

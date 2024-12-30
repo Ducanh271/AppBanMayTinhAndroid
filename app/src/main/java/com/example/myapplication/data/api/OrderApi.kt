@@ -1,8 +1,9 @@
 import com.example.myapplication.data.models.ApiResponse
-import com.example.myapplication.data.models.Order
-import com.example.myapplication.data.models.OrderDetails
 import com.example.myapplication.data.models.OrderResponse
-import com.example.myapplication.data.models.OrderRequest
+import com.example.myapplication.data.models.CreateOrderResponse
+import com.example.myapplication.data.models.CreateOrderRequest
+import com.example.myapplication.data.models.DetailOrderResponse
+import com.example.myapplication.data.models.OrderItemRequest
 import retrofit2.Call
 import retrofit2.Response
 import retrofit2.http.Body
@@ -14,15 +15,15 @@ import retrofit2.http.Path
 interface OrderApi {
     // Tạo đơn hàng
     @POST("/api/orders/")
-    suspend fun createOrder(@Body orderRequest: OrderRequest): Response<OrderResponse>
+    suspend fun createOrder(@Body orderRequest: CreateOrderRequest): Response<CreateOrderResponse>
 
     // Lấy danh sách đơn hàng theo ID người dùng
     @GET("/api/orders/user/{userId}")
-    suspend fun getOrdersByUserId(@Path("userId") userId: String): List<Order>
+    suspend fun getOrdersByUserId(@Path("userId") userId: String): List<OrderResponse>
 
     // Lấy chi tiết đơn hàng
     @GET("/api/order/{orderId}")
-    suspend fun getOrderDetails(@Path("orderId") orderId: String): OrderDetails
+    suspend fun getOrderDetails(@Path("orderId") orderId: String): DetailOrderResponse
 
     // Hủy đơn hàng
     @DELETE("/order/{orderId}")

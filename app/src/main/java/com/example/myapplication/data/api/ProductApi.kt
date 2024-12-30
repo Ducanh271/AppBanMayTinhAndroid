@@ -10,8 +10,11 @@ interface ProductApi {
     @GET("api/products/{id}")
     suspend fun getProductById(@Path("id") productId: String): Product
 
-    @GET("api/products") // Endpoint lấy danh sách sản phẩm
-    suspend fun getProducts(): ProductResponse
+    @GET("api/products")
+    suspend fun getProducts(
+        @Query("page") page: Int,  // Trang hiện tại
+        @Query("limit") limit: Int // Số lượng sản phẩm mỗi trang
+    ): ProductResponse
 
     @GET("api/products/search") // Endpoint tìm kiếm sản phẩm
     suspend fun searchProducts(
