@@ -1,7 +1,8 @@
-package com.zlpdemo.merchantDemo.Api;
+package com.example.myapplication.dataZalopay.Api;
 
-import com.zlpdemo.merchantDemo.Constant.AppInfo;
-import com.zlpdemo.merchantDemo.Helper.Helpers;
+import com.example.myapplication.dataZalopay.Constant.AppInfo;
+import com.example.myapplication.dataZalopay.Helper.Helpers;
+
 
 import org.json.JSONObject;
 

@@ -19,11 +19,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.rememberAsyncImagePainter
 import com.example.myapplication.data.models.Product
 import com.example.myapplication.ui.components.QuantityDialog
+import java.text.NumberFormat
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -37,6 +40,8 @@ fun ProductDetailScreen(
     var showDialog by remember { mutableStateOf(false) }
     val snackbarHostState = remember { SnackbarHostState() }
     var snackbarMessage by remember { mutableStateOf("") } // Trạng thái để lưu thông báo
+    val amountVND = product.price.toInt() * 25480 // Giá sản phẩm doi sang vnd
+
     // Hiển thị dialog khi cần
     if (showDialog) {
         QuantityDialog(
@@ -51,6 +56,14 @@ fun ProductDetailScreen(
     }
     fun showToast(context: Context, message: String) {
         Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+    }
+
+    fun formatCurrency(amount: Long): String {
+        val formatter = NumberFormat.getInstance(Locale.US).apply {
+            this.maximumFractionDigits = 0 // Không hiển thị số thập phân
+            this.isGroupingUsed = true // Kích hoạt dấu phân cách nhóm
+        }
+        return formatter.format(amount).replace(",", ".") // Thay dấu "," bằng dấu cách
     }
 
     Scaffold(
@@ -91,8 +104,26 @@ fun ProductDetailScreen(
                 }
                 item {
                     // 2. Thông tin sản phẩm
-                    Text(text = product.title, style = MaterialTheme.typography.headlineMedium)
-                    Text(text = "${product.price} $", style = MaterialTheme.typography.titleLarge)
+                    val formattedAmount = formatCurrency(amountVND.toLong()) //chuyen doi gia sang VND
+                    Text(
+                        text = product.title,
+                        style = MaterialTheme.typography.headlineMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "Giá sản phẩm",
+                        style = MaterialTheme.typography.headlineSmall,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Text(
+                        text = "${formattedAmount} VND",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold
+                    )
                 }
                 item {
                     // 3. Đánh giá và mô tả
