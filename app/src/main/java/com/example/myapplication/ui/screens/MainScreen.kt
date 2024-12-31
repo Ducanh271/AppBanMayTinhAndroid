@@ -25,18 +25,15 @@ import com.example.myapplication.viewmodel.CartViewModel
 fun MainScreen(
     viewModel: ProductViewModel,
     onProductClick: (Product) -> Unit,
-    cartViewModel: CartViewModel, // Thêm tham số này
+    cartViewModel: CartViewModel,
     navController: NavController,
-    authViewModel: AuthViewModel,
-
-    ) {
+    authViewModel: AuthViewModel
+) {
     val context = LocalContext.current // Đưa LocalContext ra ngoài phạm vi @Composable
 
     // Trạng thái cho ScrollableTabRow
     var selectedTabTopRow by remember { mutableStateOf(0) }
     // Trạng thái cho BottomNavigationBar
-    var selectedTabBottomBar by remember { mutableStateOf(0) }
-
     var selectedTab by remember { mutableStateOf(0) }
     var searchQuery by remember { mutableStateOf("") }
     val categories by viewModel.categories.collectAsState()
@@ -44,6 +41,7 @@ fun MainScreen(
     LaunchedEffect(Unit) {
         viewModel.fetchCategories()
     }
+
     Scaffold(
         topBar = {
             Column {
@@ -69,17 +67,17 @@ fun MainScreen(
                                 },
                                 modifier = Modifier.weight(1f)
                             )
-                            IconButton(onClick = {  navController.navigate("cart") } ) {
+                            IconButton(onClick = { navController.navigate("cart") }) {
                                 Icon(Icons.Default.ShoppingCart, contentDescription = "Cart")
                             }
                             IconButton(
                                 onClick = {
-                                    // Sử dụng authViewModel để xử lý đăng xuất thay vì trực tiếp
+                                    // Sử dụng authViewModel để xử lý đăng xuất
                                     authViewModel.logout(context)
                                     // Navigation sẽ được xử lý tự động bởi LaunchedEffect trong AppNavigation
                                 }
                             ) {
-                                Icon(Icons.Default.Logout, contentDescription = "Logout")
+
                             }
                         }
                     }
@@ -88,7 +86,6 @@ fun MainScreen(
                 if (categories.isNotEmpty()) {
                     val allCategories = listOf("All") + categories
                     ScrollableTabRow(selectedTabIndex = selectedTabTopRow, edgePadding = 8.dp) {
-
                         allCategories.forEachIndexed { index, category ->
                             Tab(
                                 selected = selectedTabTopRow == index,
@@ -112,15 +109,19 @@ fun MainScreen(
         bottomBar = {
             BottomNavigationBar(
                 selectedTab = selectedTab,
-                onTabSelected = { selectedTab = it },
-                navController = navController // Truyền NavController vào
+                onTabSelected = { newTab ->
+                    selectedTab = newTab
+                },
+                navController = navController // Thêm NavController vào đây
             )
         }
     ) { innerPadding ->
         Box(modifier = Modifier.padding(innerPadding)) {
-            ProductListScreen(viewModel = viewModel,
+            ProductListScreen(
+                viewModel = viewModel,
                 cartViewModel = cartViewModel,
-                onProductClick = onProductClick)
+                onProductClick = onProductClick
+            )
         }
     }
 }

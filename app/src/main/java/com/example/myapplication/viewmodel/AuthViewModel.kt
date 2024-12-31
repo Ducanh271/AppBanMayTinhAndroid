@@ -6,6 +6,7 @@ import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.myapplication.data.api.ApiService
+import com.example.myapplication.data.models.UserResponse
 import com.example.myapplication.data.repository.AuthRepository
 import com.example.myapplication.utils.SharedPrefUtils
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -47,25 +48,33 @@ class AuthViewModel(private val repository: AuthRepository) : ViewModel() {
         }
     }
 
+    // Hàm đăng ký
     fun signUp(name: String, email: String, password: String, context: Context) {
         viewModelScope.launch {
             try {
                 _signUpState.value = SignUpState(isLoading = true)
 
-                // 1. Đăng ký người dùng
-                val userId = repository.signUp(name, email, password)
-                SharedPrefUtils.saveUserId(context, userId)
+                // Đăng ký và lấy thông tin người dùng chi tiết
+                val user = repository.signUp(name, email, password)
 
-                // 2. Tạo giỏ hàng cho người dùng mới
+                // Lưu thông tin người dùng vào SharedPreferences
+                val userId = user.id ?: "Unknown ID"
+                val userName = user.name ?: "Unknown Name"
+                val userEmail = user.email ?: "Unknown Email"
+
+                SharedPrefUtils.saveUserId(context, userId)
+                SharedPrefUtils.saveUserName(context, userName)
+                SharedPrefUtils.saveUserEmail(context, userEmail)
+
+                // Tạo giỏ hàng cho người dùng
                 try {
                     createCartForUser(userId)
                     _signUpState.value = SignUpState(success = userId)
                     Toast.makeText(context, "Đăng ký thành công", Toast.LENGTH_SHORT).show()
                 } catch (e: Exception) {
                     Log.e("Cart", "Failed to create cart: ${e.message}")
-                    // Nếu tạo giỏ hàng thất bại, vẫn giữ tài khoản nhưng thông báo lỗi
                     _signUpState.value = SignUpState(success = userId)
-                    Toast.makeText(context, "Khởi tao gior hàng thất bại", Toast.LENGTH_LONG).show()
+                    Toast.makeText(context, "Khởi tạo giỏ hàng thất bại", Toast.LENGTH_LONG).show()
                 }
 
             } catch (e: Exception) {
@@ -75,12 +84,23 @@ class AuthViewModel(private val repository: AuthRepository) : ViewModel() {
         }
     }
 
+    // Hàm đăng nhập
     fun login(email: String, password: String, context: Context) {
         viewModelScope.launch {
             _loginState.value = LoginState(isLoading = true)
             try {
-                val userId = repository.login(email, password)
+                // Gọi repository để đăng nhập
+                val user = repository.login(email, password)
+
+                // Lưu thông tin người dùng vào SharedPreferences
+                val userId = user.id ?: "Unknown ID"
+                val userName = user.name ?: "Unknown Name"
+                val userEmail = user.email ?: "Unknown Email"
+
                 SharedPrefUtils.saveUserId(context, userId)
+                SharedPrefUtils.saveUserName(context, userName)
+                SharedPrefUtils.saveUserEmail(context, userEmail)
+
                 _loginState.value = LoginState(success = userId)
                 _isLoggedIn.value = true
             } catch (e: Exception) {
@@ -89,13 +109,15 @@ class AuthViewModel(private val repository: AuthRepository) : ViewModel() {
         }
     }
 
+    // Kiểm tra trạng thái đăng nhập
     fun checkLoginStatus(context: Context) {
         val userId = SharedPrefUtils.getUserId(context)
         _isLoggedIn.value = !userId.isNullOrEmpty()
     }
 
+    // Hàm đăng xuất
     fun logout(context: Context) {
-        SharedPrefUtils.clearUserId(context)
+        SharedPrefUtils.clearAllUserData(context)
         _isLoggedIn.value = false
         _loginState.value = LoginState()
     }

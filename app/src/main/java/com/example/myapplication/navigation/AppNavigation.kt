@@ -16,10 +16,9 @@ import com.example.myapplication.utils.SharedPrefUtils
 import com.example.myapplication.utils.LocalUserId
 import com.example.myapplication.viewmodel.AuthViewModel
 import com.example.myapplication.viewmodel.CartViewModel
-import com.example.myapplication.viewmodel.ProductViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel // Thêm import này
-import com.example.myapplication.data.models.Order
 import com.example.myapplication.viewmodel.OrderViewModel
+import com.example.myapplication.viewmodel.ProductViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 
 @Composable
 fun AppNavigation(
@@ -27,7 +26,7 @@ fun AppNavigation(
     viewModel: ProductViewModel,
     authViewModel: AuthViewModel,
     orderViewModel: OrderViewModel,
-    cartViewModel: CartViewModel = viewModel() // Khởi tạo CartViewModel với viewModel()
+    cartViewModel: CartViewModel = viewModel()
 ) {
     // Lấy context hiện tại
     val context = LocalContext.current
@@ -144,8 +143,8 @@ fun AppNavigation(
 
             composable("checkout_cart") {
                 CheckoutScreenCart(
-                    viewModel = cartViewModel, // Truyền cartViewModel vào đây
-                    orderViewModel = orderViewModel, // Thêm orderViewModel vào
+                    viewModel = cartViewModel,
+                    orderViewModel = orderViewModel,
                     onBack = { navController.popBackStack() }
                 )
             }
@@ -161,7 +160,7 @@ fun AppNavigation(
                 Box(modifier = Modifier.fillMaxSize()) {
                     if (product != null) {
                         CheckoutScreen(
-                            orderViewModel = orderViewModel,
+                            orderViewModel = orderViewModel, // Thêm dòng này
                             product = product!!,
                             onBack = { navController.popBackStack() }
                         )
@@ -169,6 +168,22 @@ fun AppNavigation(
                         CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
                     }
                 }
+            }
+
+            // Thêm màn hình tài khoản
+            composable("account") {
+                AccountScreen(
+                    navController = navController,
+                    authViewModel = authViewModel
+                )
+            }
+
+            // Thêm màn hình chỉnh sửa thông tin cá nhân
+            composable("edit_account") {
+                EditAccountScreen(
+                    navController = navController,
+                    authViewModel = authViewModel
+                )
             }
         }
     }
