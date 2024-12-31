@@ -1,6 +1,8 @@
 package com.example.myapplication
 
+import android.content.Intent
 import android.os.Bundle
+import android.os.StrictMode
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.runtime.LaunchedEffect
@@ -20,14 +22,28 @@ import com.example.myapplication.viewmodel.CartViewModelFactory
 import com.example.myapplication.viewmodel.OrderViewModel
 import com.example.myapplication.viewmodel.OrderViewModelFactory
 import com.example.myapplication.data.repository.OrdersRepository
+import vn.zalopay.sdk.Environment
+import vn.zalopay.sdk.ZaloPaySDK
+
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val ordersRepository  = OrdersRepository(ApiService.orderApi)
+
+        // Cấu hình StrictMode (chỉ nên dùng khi phát triển, không khuyến khích trong sản xuất)
+        val policy = StrictMode.ThreadPolicy.Builder().permitAll().build()
+        StrictMode.setThreadPolicy(policy)
+
+        // Khởi tạo ZaloPay SDK
+        ZaloPaySDK.init(2553, Environment.SANDBOX)
+
+        // Tạo các repository cần thiết
+        val ordersRepository = OrdersRepository(ApiService.orderApi)
         val productRepository = ProductRepository(ApiService.productApi)
         val authRepository = AuthRepository(ApiService.userApi)
         val cartRepository = CartRepository(ApiService.cartApi)
+
         setContent {
+            // Khởi tạo các ViewModel cần thiết
             val productViewModel: ProductViewModel = viewModel(
                 factory = ProductViewModelFactory(productRepository)
             )
@@ -35,25 +51,33 @@ class MainActivity : ComponentActivity() {
             val authViewModel: AuthViewModel = viewModel(
                 factory = AuthViewModelFactory(authRepository)
             )
-            val cardViewModel: CartViewModel = viewModel(
+            val cartViewModel: CartViewModel = viewModel(
                 factory = CartViewModelFactory(cartRepository)
             )
             val orderViewModel: OrderViewModel = viewModel(
                 factory = OrderViewModelFactory(ordersRepository)
             )
 
+            // Kiểm tra trạng thái đăng nhập
             LaunchedEffect(Unit) {
                 authViewModel.checkLoginStatus(this@MainActivity)
             }
 
+            // Điều hướng màn hình
             val navController = rememberNavController()
             AppNavigation(
                 navController = navController,
                 viewModel = productViewModel,
                 authViewModel = authViewModel,
-                cartViewModel = cardViewModel,
+                cartViewModel = cartViewModel,
                 orderViewModel = orderViewModel
             )
         }
+    }
+
+    // Xử lý callback từ ZaloPay
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        ZaloPaySDK.getInstance().onResult(intent)
     }
 }

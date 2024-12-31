@@ -90,8 +90,10 @@ fun MainScreen(
                             Tab(
                                 selected = selectedTabTopRow == index,
                                 onClick = {
+                                    viewModel.selectedCategory.value = category // Cập nhật selectedCategory
                                     selectedTabTopRow = index
                                     if (category == "All") {
+
                                         viewModel.fetchProducts()
                                     } else {
                                         viewModel.fetchProductsByCategory(category)

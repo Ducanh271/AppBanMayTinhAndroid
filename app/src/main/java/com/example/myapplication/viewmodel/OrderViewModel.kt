@@ -4,8 +4,8 @@ import android.content.Context
 import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.myapplication.data.models.OrderItem
-import com.example.myapplication.data.models.OrderRequest
+import com.example.myapplication.data.models.OrderItemRequest
+import com.example.myapplication.data.models.CreateOrderRequest
 import com.example.myapplication.data.models.Product
 import com.example.myapplication.data.repository.OrdersRepository
 import kotlinx.coroutines.launch
@@ -19,9 +19,9 @@ class OrderViewModel(private val ordersRepository: OrdersRepository) : ViewModel
         recipientPhone: String,
         context: Context
     ) {
-        val orderRequest = OrderRequest(
+        val orderRequest = CreateOrderRequest(
             userId = userId,
-            items = listOf(OrderItem(productId = product.id, quantity = 1)),
+            items = listOf(OrderItemRequest(productId = product.id, quantity = 1)),
             address = recipientAddress,
             phoneNumber = recipientPhone
         )
@@ -47,9 +47,9 @@ class OrderViewModel(private val ordersRepository: OrdersRepository) : ViewModel
         recipientAddress: String,
         recipientPhone: String,
         context: Context,
-        orderItems: List<OrderItem>
+        orderItems: List<OrderItemRequest>
     ) {
-        val orderRequest = OrderRequest(
+        val orderRequest = CreateOrderRequest(
             userId = userId,
             items = orderItems, // Danh sách sản phẩm từ giỏ hàng
             address = recipientAddress,

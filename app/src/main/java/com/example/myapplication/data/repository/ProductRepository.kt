@@ -4,11 +4,11 @@ import com.example.myapplication.data.api.ProductApi
 import com.example.myapplication.data.models.Product
 
 class ProductRepository(private val api: ProductApi) {
-    suspend fun getProducts(): List<Product> {
-        val response = api.getProducts()  // Gọi API và nhận về ProductResponse
-        return response.products  // Trả về danh sách sản phẩm
-    }
 
+suspend fun getProducts(page: Int, limit: Int): List<Product> {
+    val response = api.getProducts(page, limit) // Gọi API với phân trang
+    return response.products
+}
     suspend fun searchProducts(keyword: String): List<Product> {
         val response = api.searchProducts(keyword)
         return response.products // Trả về danh sách sản phẩm từ phản hồi
