@@ -17,8 +17,6 @@ import com.example.myapplication.utils.LocalUserId
 import com.example.myapplication.viewmodel.AuthViewModel
 import com.example.myapplication.viewmodel.CartViewModel
 import com.example.myapplication.viewmodel.ProductViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel // Thêm import này
-import com.example.myapplication.data.models.Order
 import com.example.myapplication.viewmodel.OrderViewModel
 
 @Composable
@@ -27,7 +25,7 @@ fun AppNavigation(
     viewModel: ProductViewModel,
     authViewModel: AuthViewModel,
     orderViewModel: OrderViewModel,
-    cartViewModel: CartViewModel = viewModel() // Khởi tạo CartViewModel với viewModel()
+    cartViewModel: CartViewModel
 ) {
     // Lấy context hiện tại
     val context = LocalContext.current
@@ -144,8 +142,8 @@ fun AppNavigation(
 
             composable("checkout_cart") {
                 CheckoutScreenCart(
-                    viewModel = cartViewModel, // Truyền cartViewModel vào đây
-                    orderViewModel = orderViewModel, // Thêm orderViewModel vào
+                    viewModel = cartViewModel,
+                    orderViewModel = orderViewModel,
                     onBack = { navController.popBackStack() }
                 )
             }
@@ -169,6 +167,13 @@ fun AppNavigation(
                         CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
                     }
                 }
+            }
+
+            composable("account") {
+                AccountScreen(
+                    navController = navController,
+                    authViewModel = authViewModel
+                )
             }
         }
     }

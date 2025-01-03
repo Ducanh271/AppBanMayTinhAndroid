@@ -5,6 +5,7 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavController
+import androidx.navigation.compose.currentBackStackEntryAsState
 
 @Composable
 fun BottomNavigationBar(
@@ -12,37 +13,22 @@ fun BottomNavigationBar(
     onTabSelected: (Int) -> Unit,
     navController: NavController
 ) {
+    val currentRoute = navController.currentBackStackEntryAsState()?.value?.destination?.route
+
     NavigationBar {
-        // Tab "Sản phẩm"
+        // Tab "Trang chủ"
         NavigationBarItem(
             icon = { Icon(Icons.Default.Home, contentDescription = "Home") },
-            label = { Text("Sản phẩm") },
-            selected = selectedTab == 0,
+            label = { Text("Trang chủ") },
+            selected = currentRoute == "product_list",
             onClick = {
                 onTabSelected(0)
-                navController.navigate("product_list")
-            }
-        )
-
-        // Tab "Khám phá"
-        NavigationBarItem(
-            icon = { Icon(Icons.Default.Explore, contentDescription = "Explore") },
-            label = { Text("Khám phá") },
-            selected = selectedTab == 1,
-            onClick = {
-                onTabSelected(1)
-                navController.navigate("explore")
-            }
-        )
-
-        // Tab "Tin nhắn"
-        NavigationBarItem(
-            icon = { Icon(Icons.Default.Message, contentDescription = "Message") },
-            label = { Text("Tin nhắn") },
-            selected = selectedTab == 2,
-            onClick = {
-                onTabSelected(2)
-                navController.navigate("messages")
+                if (currentRoute != "product_list") {
+                    navController.navigate("product_list") {
+                        launchSingleTop = true
+                        restoreState = true
+                    }
+                }
             }
         )
 
@@ -50,10 +36,15 @@ fun BottomNavigationBar(
         NavigationBarItem(
             icon = { Icon(Icons.Default.ShoppingCart, contentDescription = "Cart") },
             label = { Text("Giỏ hàng") },
-            selected = selectedTab == 3,
+            selected = currentRoute == "cart",
             onClick = {
-                onTabSelected(3)
-                navController.navigate("cart")
+                onTabSelected(1)
+                if (currentRoute != "cart") {
+                    navController.navigate("cart") {
+                        launchSingleTop = true
+                        restoreState = true
+                    }
+                }
             }
         )
 
@@ -61,10 +52,15 @@ fun BottomNavigationBar(
         NavigationBarItem(
             icon = { Icon(Icons.Default.AccountCircle, contentDescription = "Account") },
             label = { Text("Tài khoản") },
-            selected = selectedTab == 4,
+            selected = currentRoute == "account",
             onClick = {
-                onTabSelected(4)
-                navController.navigate("account")
+                onTabSelected(2)
+                if (currentRoute != "account") {
+                    navController.navigate("account") {
+                        launchSingleTop = true
+                        restoreState = true
+                    }
+                }
             }
         )
     }
