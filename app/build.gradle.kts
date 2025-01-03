@@ -63,6 +63,12 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
 
+
+    implementation(fileTree(mapOf(
+        "dir" to "D:\\TACN\\AppBanMayTinhAndroid\\librarry",
+        "include" to listOf("*.aar", "*.jar"),
+        "exclude" to listOf("")
+    )))
     implementation(fileTree(mapOf(
         "dir" to "D:\\AAA\\AppBanMayTinhAndroid\\librarry",
         "include" to listOf("*.aar", "*.jar"),

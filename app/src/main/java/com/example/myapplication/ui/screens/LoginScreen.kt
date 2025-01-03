@@ -27,6 +27,9 @@ import com.example.myapplication.R
 import com.example.myapplication.utils.AccountPreferences
 import com.example.myapplication.viewmodel.AuthViewModel
 import androidx.compose.foundation.clickable
+import android.widget.Toast
+import androidx.compose.ui.text.input.ImeAction
+
 
 @Composable
 fun LoginScreen(
@@ -39,6 +42,9 @@ fun LoginScreen(
     var password by remember { mutableStateOf("") }
     var showPassword by remember { mutableStateOf(false) }
     var showSaveAccountDialog by remember { mutableStateOf(false) }
+    var emailError by remember { mutableStateOf("") }
+    var passwordError by remember { mutableStateOf("") }
+
 
     val loginState by viewModel.loginState.collectAsState()
     val context = LocalContext.current
@@ -111,21 +117,36 @@ fun LoginScreen(
             // Trường nhập Email
             OutlinedTextField(
                 value = email,
-                onValueChange = { email = it },
+                onValueChange = {
+                    email = it
+                    emailError = if (isValidEmail(email)) "" else "Vui lòng nhập đúng định dạng Email"
+                },
                 label = { Text("Email") },
                 leadingIcon = { Icon(Icons.Default.Email, contentDescription = "Email Icon") },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email, imeAction = ImeAction.Next),
                 singleLine = true,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 8.dp) // Padding ngang để tránh sát lề
-                    .padding(bottom = 16.dp) // Tạo khoảng cách dưới trường nhập
+                    .padding(bottom = 8.dp), // Tạo khoảng cách dưới trường nhập
+                isError = emailError.isNotEmpty()
             )
+            if (emailError.isNotEmpty()) {
+                Text(
+                    text = emailError,
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.align(Alignment.Start)
+                )
+            }
 
             // Trường nhập Password
             OutlinedTextField(
                 value = password,
-                onValueChange = { password = it },
+                onValueChange = {
+                    password = it
+                    passwordError = if (isValidPassword(password)) "" else "Mật khẩu phải có ít nhất 6 ký tự, bao gồm chữ hoa, chữ thường và số"
+                },
                 label = { Text("Mật khẩu") },
                 leadingIcon = { Icon(Icons.Default.Lock, contentDescription = "Password Icon") },
                 trailingIcon = {
@@ -137,23 +158,44 @@ fun LoginScreen(
                     }
                 },
                 visualTransformation = if (showPassword) VisualTransformation.None else PasswordVisualTransformation(),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Done),
                 singleLine = true,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 8.dp) // Padding ngang để tạo không gian
-                    .padding(bottom = 24.dp) // Tạo khoảng cách dưới trường nhập
+                    .padding(bottom = 8.dp), // Tạo khoảng cách dưới trường nhập
+                isError = passwordError.isNotEmpty()
             )
+            // Hiển thị lỗi mật khẩu (nếu có)
+            if (passwordError.isNotEmpty()) {
+                Text(
+                    text = passwordError,
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.align(Alignment.Start)
+                )
+            }
 
             // Nút Login
             Button(
                 onClick = {
-                    viewModel.login(email, password, context)
+                    when {
+                        !isValidEmail(email) -> {
+                            Toast.makeText(context, "Vui lòng nhập đúng định dạng Email", Toast.LENGTH_SHORT).show()
+                        }
+                        !isValidPassword(password) -> {
+                            Toast.makeText(context, "Mật khẩu phải có ít nhất 6 ký tự, bao gồm chữ hoa, chữ thường và số", Toast.LENGTH_SHORT).show()
+                        }
+                        else -> {
+                            viewModel.login(email, password, context)
+                        }
+                    }
                 },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(50.dp)
                     .padding(horizontal = 8.dp) // Padding ngang cho nút
+                    .padding(top = 16.dp)
             ) {
                 Text("Đăng nhập", fontSize = 18.sp)
             }
@@ -196,7 +238,7 @@ fun LoginScreen(
         }
 
         // Hộp thoại lưu tài khoản (Save hoặc No Thanks)
-        if (showSaveAccountDialog) {
+        if (loginState.success != null && showSaveAccountDialog) {
             AlertDialog(
                 onDismissRequest = { showSaveAccountDialog = false },
                 title = { Text("Save Account?") },
@@ -223,6 +265,11 @@ fun LoginScreen(
                     }
                 }
             )
+        }
+        if (loginState.success != null && !showSaveAccountDialog) {
+            LaunchedEffect(loginState.success) {
+                onLoginSuccess()
+            }
         }
     }
 }
