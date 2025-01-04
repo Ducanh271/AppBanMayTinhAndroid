@@ -1,5 +1,6 @@
 package com.example.myapplication.ui.screens
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
@@ -10,6 +11,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -67,7 +69,10 @@ fun MainScreen(
                                 leadingIcon = {
                                     Icon(Icons.Default.Search, contentDescription = "Search Icon")
                                 },
-                                modifier = Modifier.weight(1f)
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .height(52.dp) // Adjust height to be slightly lower
+                                    .background(MaterialTheme.colorScheme.surface, shape = MaterialTheme.shapes.medium) // Rounded corners for the search box
                             )
                             IconButton(onClick = {  navController.navigate("cart") } ) {
                                 Icon(Icons.Default.ShoppingCart, contentDescription = "Cart")
@@ -82,7 +87,10 @@ fun MainScreen(
                                 Icon(Icons.Default.Logout, contentDescription = "Logout")
                             }
                         }
-                    }
+                    },
+                    colors = TopAppBarDefaults.mediumTopAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.primary,
+                    )
                 )
 
                 if (categories.isNotEmpty()) {
