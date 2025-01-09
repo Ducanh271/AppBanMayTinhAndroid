@@ -3,7 +3,10 @@ import com.example.myapplication.data.models.OrderResponse
 import com.example.myapplication.data.models.CreateOrderResponse
 import com.example.myapplication.data.models.CreateOrderRequest
 import com.example.myapplication.data.models.DetailOrderResponse
+import com.example.myapplication.data.models.Product
+
 import com.example.myapplication.data.models.OrderItemRequest
+import com.example.myapplication.data.models.ProductResponse
 import retrofit2.Call
 import retrofit2.Response
 import retrofit2.http.Body
@@ -28,6 +31,13 @@ interface OrderApi {
     // Hủy đơn hàng
     @DELETE("/order/{orderId}")
     suspend fun cancelOrder(@Path("orderId") orderId: String): ApiResponse
+
+    //Lay All orderr
+    @GET("/api/orders/") // Thay bằng endpoint thực tế của bạn
+    suspend fun getAllOrders(): List<OrderResponse>
+
+    @GET("products/{id}")
+    suspend fun getProductDetails(@Path("id") productId: String): Product
 }
 
 

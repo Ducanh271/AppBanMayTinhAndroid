@@ -188,7 +188,7 @@ fun CheckoutScreen(
                                             ).show()
 
                                             if(userId != null){
-                                                orderViewModel.handleCashOnDeliveryPayment(userId, product, recipientAddress, recipientPhone,context)
+                                                orderViewModel.handleCashOnDeliveryPayment_ZaloPay(userId, product, recipientAddress, recipientPhone,context)
                                                 //dat don hang thanh cong thi toast len thong tin dat don hang kem ID
                                             }
 
@@ -258,6 +258,7 @@ fun CheckoutScreen(
             ) {
                 Text(text = "Thanh toán khi nhận hàng", fontSize = 17.sp, color = Color.White)
             }
+
 
         }
     }

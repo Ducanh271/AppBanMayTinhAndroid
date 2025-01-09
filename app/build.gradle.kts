@@ -64,7 +64,7 @@ dependencies {
     implementation(libs.androidx.material3)
 
     implementation(fileTree(mapOf(
-        "dir" to "D:\\Download\\Downloads\\app_banhangClone\\zalopay_grow\\librarry",
+        "dir" to "D:\\Download\\Downloads\\Develop\\comback_commit\\AppBanMayTinhAndroid\\librarry",
         "include" to listOf("*.aar", "*.jar"),
         "exclude" to listOf("")
     )))

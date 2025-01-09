@@ -22,13 +22,14 @@ fun BottomNavigationBar(
 
             }
         )
+        // Tab "Khám phá" -> Điều hướng tới "orders"
         NavigationBarItem(
-            icon = { Icon(Icons.Default.Explore, contentDescription = "Dạo") },
-            label = { Text("Dạo") },
+            icon = { Icon(Icons.Default.Explore, contentDescription = "Explore") },
+            label = { Text("Khám phá") },
             selected = selectedTab == 1,
             onClick = {
                 onTabSelected(1)
-
+                navController.navigate("orders") // Điều hướng tới route "orders"
             }
         )
         NavigationBarItem(
