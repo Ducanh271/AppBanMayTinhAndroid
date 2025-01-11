@@ -18,7 +18,6 @@ import androidx.compose.ui.unit.dp
 import com.example.myapplication.data.models.AddToCartRequest
 import com.example.myapplication.data.models.Product
 import com.example.myapplication.ui.components.ProductItem
-import com.example.myapplication.utils.LocalUserId
 import com.example.myapplication.utils.SharedPrefUtils
 import com.example.myapplication.viewmodel.CartViewModel
 import com.example.myapplication.viewmodel.ProductViewModel
