@@ -1,7 +1,5 @@
 package com.example.myapplication.ui.screens
 
-import android.content.Context
-import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -23,8 +21,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.rememberAsyncImagePainter
+import com.example.myapplication.data.models.AddToCartRequest
 import com.example.myapplication.data.models.Product
 import com.example.myapplication.ui.components.QuantityDialog
+import com.example.myapplication.utils.SharedPrefUtils
+import com.example.myapplication.viewmodel.CartViewModel
 import java.text.NumberFormat
 import java.util.Locale
 
@@ -34,14 +35,26 @@ fun ProductDetailScreen(
     product: Product,
     onBack: () -> Unit,
     onBuyNow: (Product) -> Unit,
-    onAddToCart: (Product, Int) -> Unit, // Callback để xử lý thêm sản phẩm vào giỏ hàng
+    cartViewModel: CartViewModel // Thêm ViewModel để quản lý giỏ hàng
 ) {
-    val context = LocalContext.current
     var showDialog by remember { mutableStateOf(false) }
     val snackbarHostState = remember { SnackbarHostState() }
     var snackbarMessage by remember { mutableStateOf("") } // Trạng thái để lưu thông báo
     val amountVND = product.price.toInt() * 25480 // Giá sản phẩm doi sang vnd
+    val context = LocalContext.current
 
+    // Định nghĩa hàm onAddToCart
+    fun onAddToCart(product: Product, quantity: Int) {
+        val userId = SharedPrefUtils.getUserId(context)
+        if (userId != null) {
+            val request = AddToCartRequest(userId, product.id, quantity)
+            cartViewModel.addToCart(request) { message ->
+                snackbarMessage = message
+            }
+        } else {
+            snackbarMessage = "Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng."
+        }
+    }
     // Hiển thị dialog khi cần
     if (showDialog) {
         QuantityDialog(
@@ -54,10 +67,6 @@ fun ProductDetailScreen(
             }
         )
     }
-    fun showToast(context: Context, message: String) {
-        Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
-    }
-
     fun formatCurrency(amount: Long): String {
         val formatter = NumberFormat.getInstance(Locale.US).apply {
             this.maximumFractionDigits = 0 // Không hiển thị số thập phân

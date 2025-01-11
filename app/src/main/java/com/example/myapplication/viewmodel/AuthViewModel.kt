@@ -57,15 +57,7 @@ class AuthViewModel(private val repository: AuthRepository) : ViewModel() {
                 // Đăng ký và lấy thông tin người dùng chi tiết
                 val user = repository.signUp(name, email, password)
 
-                // Lưu thông tin người dùng vào SharedPreferences
                 val userId = user.id ?: "Unknown ID"
-                val userName = user.name ?: "Unknown Name"
-                val userEmail = user.email ?: "Unknown Email"
-
-                SharedPrefUtils.saveUserId(context, userId)
-                SharedPrefUtils.saveUserName(context, userName)
-                SharedPrefUtils.saveUserEmail(context, userEmail)
-
                 // Tạo giỏ hàng cho người dùng
                 try {
                     createCartForUser(userId)

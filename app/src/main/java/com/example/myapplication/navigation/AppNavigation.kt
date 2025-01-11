@@ -115,16 +115,7 @@ fun AppNavigation(
                             onBuyNow = { selectedProduct ->
                                 navController.navigate("checkout/${selectedProduct.id}")
                             },
-                            onAddToCart = { product, quantity ->
-                                if (userId != null) {
-                                    val request = AddToCartRequest(userId, product.id, quantity)
-                                    cartViewModel.addToCart(request) { message ->
-                                        println("Response: $message")
-                                    }
-                                } else {
-                                    println("UserID is null. Please login.")
-                                }
-                            }
+                            cartViewModel = cartViewModel
                         )
                     } else {
                         CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))

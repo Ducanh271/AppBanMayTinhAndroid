@@ -23,7 +23,6 @@ object SharedPrefUtils {
         val sharedPref = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
         return sharedPref.getString(KEY_USER_ID, null)
     }
-
     // Lưu tên người dùng
     fun saveUserName(context: Context, name: String?) {
         val sharedPref = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
@@ -54,6 +53,7 @@ object SharedPrefUtils {
         return sharedPref.getString(KEY_USER_EMAIL, null)
     }
     // Xóa tất cả thông tin người dùng
+
     fun clearAllUserData(context: Context) {
         val sharedPref = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
         with(sharedPref.edit()) {

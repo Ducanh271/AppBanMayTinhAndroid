@@ -108,8 +108,9 @@ fun ProductListScreen(
                                 }
                             },
                             onAddToCart = { product, quantity ->
-                                if (userId != null) {
-                                    val request = AddToCartRequest(userId, product.id, quantity)
+                                val currentUserId = SharedPrefUtils.getUserId(context)
+                                if (currentUserId  != null) {
+                                    val request = AddToCartRequest(currentUserId , product.id, quantity)
                                     cartViewModel.addToCart(request) { message ->
                                         println("Response: $message")
                                     }

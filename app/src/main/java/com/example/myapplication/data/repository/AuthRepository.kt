@@ -67,9 +67,7 @@ class AuthRepository(private val userApi: UserApi) {
                 User(
                     id = userResponse.id ?: throw Exception("User ID is missing"),
                     name = userResponse.name ?: "Unknown",
-                    email = userResponse.email ?: "Unknown",
-                    password = userResponse.password ?: "",
-                    createdAt = userResponse.createdAt ?: ""
+                    email = userResponse.email ?: "Unknown"
                 )
             } else {
                 throw Exception("Invalid user details response: User is null")
