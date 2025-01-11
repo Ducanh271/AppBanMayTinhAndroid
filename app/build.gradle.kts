@@ -84,7 +84,7 @@ dependencies {
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
 
     // Coil (Image loading for Compose)
-    implementation("io.coil-kt:coil-compose:2.6.0")
+    implementation(libs.coil.compose)
 
     // Coroutines (Xử lý bất đồng bộ)
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")

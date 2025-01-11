@@ -11,6 +11,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.rememberAsyncImagePainter
@@ -18,6 +19,7 @@ import com.example.myapplication.data.models.AddToCartRequest
 import com.example.myapplication.data.models.Product
 import com.example.myapplication.utils.SharedPrefUtils
 import com.example.myapplication.viewmodel.CartViewModel
+import com.example.myapplication.R
 
 
 @Composable
@@ -54,7 +56,11 @@ fun ProductItem(
             horizontalAlignment = Alignment.CenterHorizontally // Center the content horizontally
         ) {
             Image(
-                painter = rememberAsyncImagePainter(product.image),
+                painter = rememberAsyncImagePainter(
+                    model = product.image,
+                    placeholder = painterResource(R.drawable.placeholder_image),
+                    error = painterResource(R.drawable.error_image)
+                ),
                 contentDescription = product.title,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
