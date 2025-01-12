@@ -22,10 +22,10 @@ fun BottomNavigationBar(
 
             }
         )
-        // Tab "Khám phá" -> Điều hướng tới "orders"
+        // Tab "Đơn hàng" -> Điều hướng tới "orders"
         NavigationBarItem(
-            icon = { Icon(Icons.Default.Explore, contentDescription = "Explore") },
-            label = { Text("Khám phá") },
+            icon = { Icon(Icons.Default.ListAlt, contentDescription = "Explore") },
+            label = { Text("Đơn hàng") },
             selected = selectedTab == 1,
             onClick = {
                 onTabSelected(1)
@@ -56,7 +56,7 @@ fun BottomNavigationBar(
             selected = selectedTab == 4,
             onClick = {
                 onTabSelected(4)
-
+                navController.navigate("account")
             }
         )
     }

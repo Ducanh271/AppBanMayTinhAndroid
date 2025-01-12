@@ -1,7 +1,9 @@
 package com.example.myapplication.ui.screens
 
+import android.util.Log
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -20,6 +22,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.myapplication.data.models.OrderResponse
+import com.example.myapplication.ui.components.OrderItemRow
 import com.example.myapplication.utils.SharedPrefUtils
 import com.example.myapplication.viewmodel.OrderViewModel
 import java.text.NumberFormat
@@ -28,26 +31,27 @@ import java.text.NumberFormat
 @Composable
 fun OrderScreen(
     viewModel: OrderViewModel,
+    onOrderClick: (String) -> Unit,
     onBack: () -> Unit
 ) {
     val context = LocalContext.current
     val userId = SharedPrefUtils.getUserId(context) ?: "" // Cung cấp giá trị mặc định nếu null
 
-//    // Gọi hàm fetchOrders khi màn hình được load
-//    LaunchedEffect(userId) {
-//        if (userId.isNotEmpty()) {
-//            viewModel.fetchOrders(userId)
-//        } else {
-//            // Xử lý trường hợp không có userId, ví dụ yêu cầu người dùng đăng nhập lại
-//        }
-//    }
-    // Gọi hàm fetchAllOrders khi màn hình được load
+    // Gọi hàm fetchOrders khi màn hình được load
+    LaunchedEffect(userId) {
+        if (userId.isNotEmpty()) {
+            viewModel.fetchOrders(userId)
+        } else {
+            // Xử lý trường hợp không có userId, ví dụ yêu cầu người dùng đăng nhập lại
+        }
+    }
+    // Gọi hàm fetchOrders khi màn hình được load
     LaunchedEffect(Unit) {
-        viewModel.fetchAllOrders() // Không cần truyền userId
+        viewModel.fetchOrders(userId)
     }
 
     // Lấy trạng thái từ ViewModel
-    val orderState = viewModel.orders.collectAsState().value
+    val orderList = viewModel.orderList.collectAsState().value
     val isLoading = viewModel.isLoading.collectAsState().value
 
     Scaffold(
@@ -76,7 +80,7 @@ fun OrderScreen(
                 CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
             } else {
                 // Kiểm tra nếu danh sách rỗng
-                if (orderState.isEmpty()) {
+                if (orderList.isEmpty()) {
                     Text(
                         text = "You have no orders.",
                         modifier = Modifier.align(Alignment.Center),
@@ -89,8 +93,15 @@ fun OrderScreen(
                             .fillMaxSize()
                             .padding(16.dp)
                     ) {
-                        items(orderState) { order ->
-                            OrderCard(order = order, viewModel = viewModel) // Truyền viewModel vào đây
+                        items(orderList) { order ->
+                            OrderItemRow(
+                                orderItemRow = order,
+                                onClick = { orderId ->
+                                    Log.d("OrderScreen", "Navigating with orderId: $orderId") // Log kiểm tra
+                                    onOrderClick(orderId) }
+
+
+                            )
                         }
                     }
                 }
@@ -98,71 +109,3 @@ fun OrderScreen(
         }
     }
 }
-
-
-@Composable
-fun OrderCard(order: OrderResponse, viewModel: OrderViewModel) {
-    val productNames = remember { mutableStateListOf<String?>() }
-
-    // Lấy tên sản phẩm từ API dựa trên productId
-    LaunchedEffect(order.items) {
-        order.items.forEach { item ->
-            val productName = viewModel.fetchProductName(item.productId) // Sử dụng hàm mới
-            productNames.add(productName)
-        }
-    }
-
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(bottom = 16.dp),
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-    ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text(
-                text = "Order ID: ${order.id ?: "Unknown"}",
-                style = MaterialTheme.typography.bodyLarge.copy(
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 16.sp
-                )
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = "Products:",
-                style = MaterialTheme.typography.bodyMedium.copy(
-                    fontWeight = FontWeight.SemiBold
-                )
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Column {
-                order.items.forEachIndexed { index, item ->
-                    val productName = productNames.getOrNull(index) ?: "Loading..."
-                    Text(
-                        text = "- $productName (x${item.quantity})",
-                        style = MaterialTheme.typography.bodyMedium.copy(fontSize = 14.sp)
-                    )
-                }
-            }
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = "Total Price: ${NumberFormat.getCurrencyInstance().format(order.totalPrice)}",
-                style = MaterialTheme.typography.bodyLarge.copy(
-                    color = MaterialTheme.colorScheme.primary,
-                    fontWeight = FontWeight.Bold
-                )
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = "Status: ${order.status ?: "Unknown"}",
-                style = MaterialTheme.typography.bodyMedium.copy(
-                    fontWeight = FontWeight.SemiBold,
-                    color = Color.Gray
-                )
-            )
-        }
-    }
-}
-
-

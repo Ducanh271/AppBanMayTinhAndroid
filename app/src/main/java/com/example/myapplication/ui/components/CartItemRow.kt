@@ -22,14 +22,18 @@ import androidx.compose.ui.graphics.Color
 import coil.compose.rememberImagePainter
 import com.example.myapplication.data.models.CartItem
 
-
-
 @Composable
 fun CartItemRow(
     cartItem: CartItem,
     onRemove: () -> Unit,
     onQuantityChange: (Int) -> Unit
 ) {
+    // Hàm định dạng tiền tệ VND
+    fun formatCurrency(amount: Double): String {
+        val formatter = java.text.NumberFormat.getCurrencyInstance(java.util.Locale("vi", "VN"))
+        return formatter.format(amount)
+    }
+
     Card(
         shape = RoundedCornerShape(16.dp),
         modifier = Modifier
@@ -66,8 +70,10 @@ fun CartItemRow(
                     color = MaterialTheme.colorScheme.onSurface
                 )
                 Spacer(modifier = Modifier.height(4.dp))
+
+                // Hiển thị giá đã được định dạng
                 Text(
-                    text = "Price: $${cartItem.price}",
+                    text = "Giá: ${formatCurrency(cartItem.price)}",
                     style = MaterialTheme.typography.bodyMedium,
                     color = Color.Gray
                 )
@@ -105,8 +111,9 @@ fun CartItemRow(
 
                 Spacer(modifier = Modifier.height(8.dp))
 
+                // Hiển thị tổng tiền đã được định dạng
                 Text(
-                    text = "Total: $${cartItem.total}",
+                    text = "Tổng: ${formatCurrency(cartItem.total)}",
                     style = MaterialTheme.typography.bodyLarge.copy(
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.primary
@@ -138,3 +145,4 @@ fun CartItemRow(
         }
     }
 }
+

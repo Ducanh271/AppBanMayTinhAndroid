@@ -2,10 +2,10 @@ import com.example.myapplication.data.models.ApiResponse
 import com.example.myapplication.data.models.OrderResponse
 import com.example.myapplication.data.models.CreateOrderResponse
 import com.example.myapplication.data.models.CreateOrderRequest
-import com.example.myapplication.data.models.DetailOrderResponse
 import com.example.myapplication.data.models.Product
 
 import com.example.myapplication.data.models.OrderItemRequest
+import com.example.myapplication.data.models.OrderItemResponse
 import com.example.myapplication.data.models.ProductResponse
 import retrofit2.Call
 import retrofit2.Response
@@ -25,19 +25,13 @@ interface OrderApi {
     suspend fun getOrdersByUserId(@Path("userId") userId: String): List<OrderResponse>
 
     // Lấy chi tiết đơn hàng
-    @GET("/api/order/{orderId}")
-    suspend fun getOrderDetails(@Path("orderId") orderId: String): DetailOrderResponse
+    @GET("/api/orders/{id}")
+    suspend fun getOrderDetails(@Path("id") orderId: String): OrderResponse
 
     // Hủy đơn hàng
-    @DELETE("/order/{orderId}")
+    @DELETE("/orders/{id}")
     suspend fun cancelOrder(@Path("orderId") orderId: String): ApiResponse
 
-    //Lay All orderr
-    @GET("/api/orders/") // Thay bằng endpoint thực tế của bạn
-    suspend fun getAllOrders(): List<OrderResponse>
-
-    @GET("products/{id}")
-    suspend fun getProductDetails(@Path("id") productId: String): Product
 }
 
 

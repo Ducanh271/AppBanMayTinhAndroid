@@ -35,15 +35,18 @@ fun ProductDetailScreen(
     product: Product,
     onBack: () -> Unit,
     onBuyNow: (Product) -> Unit,
-    cartViewModel: CartViewModel // Thêm ViewModel để quản lý giỏ hàng
+    cartViewModel: CartViewModel
 ) {
     var showDialog by remember { mutableStateOf(false) }
     val snackbarHostState = remember { SnackbarHostState() }
-    var snackbarMessage by remember { mutableStateOf("") } // Trạng thái để lưu thông báo
-    val amountVND = product.price.toInt() * 25480 // Giá sản phẩm doi sang vnd
+    var snackbarMessage by remember { mutableStateOf("") }
     val context = LocalContext.current
 
-    // Định nghĩa hàm onAddToCart
+    // Định dạng tiền tệ VND
+    val currencyFormat = NumberFormat.getCurrencyInstance(Locale("vi", "VN"))
+    val priceFormatted = currencyFormat.format(product.price)
+
+    // Hàm thêm sản phẩm vào giỏ hàng
     fun onAddToCart(product: Product, quantity: Int) {
         val userId = SharedPrefUtils.getUserId(context)
         if (userId != null) {
@@ -55,7 +58,7 @@ fun ProductDetailScreen(
             snackbarMessage = "Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng."
         }
     }
-    // Hiển thị dialog khi cần
+
     if (showDialog) {
         QuantityDialog(
             product = product,
@@ -66,13 +69,6 @@ fun ProductDetailScreen(
                 showDialog = false
             }
         )
-    }
-    fun formatCurrency(amount: Long): String {
-        val formatter = NumberFormat.getInstance(Locale.US).apply {
-            this.maximumFractionDigits = 0 // Không hiển thị số thập phân
-            this.isGroupingUsed = true // Kích hoạt dấu phân cách nhóm
-        }
-        return formatter.format(amount).replace(",", ".") // Thay dấu "," bằng dấu cách
     }
 
     Scaffold(
@@ -92,16 +88,14 @@ fun ProductDetailScreen(
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
-            // Nội dung chính hiển thị thông tin sản phẩm
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(horizontal = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp),
-                contentPadding = PaddingValues(bottom = 80.dp) // Đệm dưới để tránh nút
+                contentPadding = PaddingValues(bottom = 80.dp)
             ) {
                 item {
-                    // 1. Ảnh sản phẩm
                     Image(
                         painter = rememberAsyncImagePainter(product.image),
                         contentDescription = product.title,
@@ -112,8 +106,6 @@ fun ProductDetailScreen(
                     )
                 }
                 item {
-                    // 2. Thông tin sản phẩm
-                    val formattedAmount = formatCurrency(amountVND.toLong()) //chuyen doi gia sang VND
                     Text(
                         text = product.title,
                         style = MaterialTheme.typography.headlineMedium,
@@ -122,20 +114,16 @@ fun ProductDetailScreen(
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
                         text = "Giá sản phẩm",
-                        style = MaterialTheme.typography.headlineSmall,
-                        modifier = Modifier.fillMaxWidth()
+                        style = MaterialTheme.typography.headlineSmall
                     )
-
                     Spacer(modifier = Modifier.height(8.dp))
-
                     Text(
-                        text = "${formattedAmount} VND",
+                        text = "$priceFormatted",
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold
                     )
                 }
                 item {
-                    // 3. Đánh giá và mô tả
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text("⭐⭐⭐⭐⭐", fontSize = 18.sp)
                         Spacer(modifier = Modifier.width(8.dp))
@@ -154,13 +142,12 @@ fun ProductDetailScreen(
                 }
             }
 
-            // Nút "Mua ngay" và "Thêm vào giỏ hàng" được đặt cố định ở cuối màn hình
             Row(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .align(Alignment.BottomCenter) // Căn dưới cùng
-                    .padding(16.dp) // Khoảng cách mép ngoài
+                    .align(Alignment.BottomCenter)
+                    .padding(16.dp)
             ) {
                 Button(
                     onClick = { onBuyNow(product) },
@@ -180,7 +167,6 @@ fun ProductDetailScreen(
                     Text("Thêm vào giỏ hàng")
                 }
             }
-            // Hiển thị Snackbar khi có thông báo
             SnackbarHost(
                 hostState = snackbarHostState,
                 modifier = Modifier.align(Alignment.BottomCenter)
@@ -188,7 +174,7 @@ fun ProductDetailScreen(
             LaunchedEffect(snackbarMessage) {
                 if (snackbarMessage.isNotEmpty()) {
                     snackbarHostState.showSnackbar(snackbarMessage)
-                    snackbarMessage = "" // Xóa thông báo sau khi hiển thị
+                    snackbarMessage = ""
                 }
             }
         }

@@ -2,10 +2,12 @@ package com.example.myapplication.viewmodel
 
 import OrderApi
 import android.content.Context
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.myapplication.data.models.Cart
 import com.example.myapplication.data.models.OrderItemRequest
 import com.example.myapplication.data.models.CreateOrderRequest
 import com.example.myapplication.data.models.OrderResponse
@@ -24,9 +26,14 @@ class OrderViewModel(private val ordersRepository: OrdersRepository,
 
     //code cho OderScreen:
     // StateFlow cho danh sách đơn hàng
-    private val _orders = MutableStateFlow<List<OrderResponse>>(emptyList())
-    val orders: StateFlow<List<OrderResponse>> = _orders
+    private val _orderList = MutableStateFlow<List<OrderResponse>>(emptyList())
+    val orderList: StateFlow<List<OrderResponse>> = _orderList
 
+    private val _orderItemList = MutableStateFlow<OrderResponse?>(null)
+    val orderItemList: StateFlow<OrderResponse?> = _orderItemList
+
+    private val _message = MutableStateFlow<String>("")
+    val message: StateFlow<String> = _message
     // StateFlow cho trạng thái tải dữ liệu
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading
@@ -41,35 +48,25 @@ class OrderViewModel(private val ordersRepository: OrdersRepository,
             _isLoading.value = true
             try {
                 val response = ordersRepository.getOrdersByUserId(userId)
-                _orders.value = response
+                _orderList.value = response
             } catch (e: Exception) {
-                _orders.value = emptyList() // Lỗi, không có đơn hàng
+                _orderList.value = emptyList() // Lỗi, không có đơn hàng
             } finally {
                 _isLoading.value = false
             }
         }
     }
-
-    //fetchProductName
-    suspend fun fetchProductName(productId: String): String {
-        return try {
-            val product = ordersRepository.getProductById(productId) // Nhận `Product`
-            product.title // Truy cập thuộc tính `title` của `Product`
-        } catch (e: Exception) {
-            "Error"
-        }
-    }
-
-    //Lấy All Order tu serverr
-
-    fun fetchAllOrders() {
+    fun loadOrder(orderId: String) {
+        Log.d("OrderViewModel", "loadOrder called with ID: $orderId")
         viewModelScope.launch {
             _isLoading.value = true
             try {
-                val response = ordersRepository.getAllOrders() // Gọi API lấy tất cả đơn hàng
-                _orders.value = response
+                val response = ordersRepository.getOrderDetails(orderId)
+                _orderItemList.value = response
+                Log.d("OrderViewModel", "Order details loaded: $response")
             } catch (e: Exception) {
-                _orders.value = emptyList() // Lỗi, không có đơn hàng
+                Log.e("OrderViewModel", "Error loading order: ${e.message}") // Log lỗi
+                _message.value = "Failed to load order: ${e.message}"
             } finally {
                 _isLoading.value = false
             }

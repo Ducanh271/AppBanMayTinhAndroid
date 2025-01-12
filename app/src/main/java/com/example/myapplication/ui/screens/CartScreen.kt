@@ -29,10 +29,11 @@ import com.example.myapplication.utils.SharedPrefUtils
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CartScreen(viewModel: CartViewModel,
-               onBack: () -> Unit,
-               onCheckout: () -> Unit) {
-
+fun CartScreen(
+    viewModel: CartViewModel,
+    onBack: () -> Unit,
+    onCheckout: () -> Unit
+) {
     val context = LocalContext.current
     val userId = SharedPrefUtils.getUserId(context)
 
@@ -49,10 +50,16 @@ fun CartScreen(viewModel: CartViewModel,
     val isLoading = viewModel.isLoading.collectAsState().value
     val totalPrice = viewModel.calculateTotalPrice()
 
+    // Hàm định dạng tiền VND
+    fun formatCurrency(amount: Double): String {
+        val formatter = NumberFormat.getCurrencyInstance(java.util.Locale("vi", "VN"))
+        return formatter.format(amount)
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Your Cart") },
+                title = { Text("Giỏ hàng của bạn") },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Back")
@@ -74,12 +81,12 @@ fun CartScreen(viewModel: CartViewModel,
                 CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
             } else {
                 cartState?.let { cart ->
-                    // Product list in the cart
+                    // Danh sách sản phẩm trong giỏ hàng
                     LazyColumn(
                         modifier = Modifier
                             .fillMaxSize()
-                            .padding(bottom = 100.dp), // Add space to avoid overlap with total price section
-                        contentPadding = PaddingValues(bottom = 100.dp), // Ensure the last item is fully visible
+                            .padding(bottom = 100.dp), // Không gian để tránh chồng lấn với phần tổng tiền
+                        contentPadding = PaddingValues(bottom = 100.dp)
                     ) {
                         items(cart.items) { cartItem ->
                             CartItemRow(
@@ -98,7 +105,7 @@ fun CartScreen(viewModel: CartViewModel,
                         }
                     }
 
-                    // Total Price and Checkout button section
+                    // Phần hiển thị tổng tiền và nút Thanh toán
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -106,7 +113,7 @@ fun CartScreen(viewModel: CartViewModel,
                             .background(MaterialTheme.colorScheme.surface)
                             .padding(16.dp)
                     ) {
-                        val formattedTotalPrice = NumberFormat.getCurrencyInstance().format(totalPrice)
+                        val formattedTotalPrice = formatCurrency(totalPrice) // Định dạng giá trị tổng tiền
 
                         Text(
                             text = "Tổng số tiền: $formattedTotalPrice",
@@ -114,24 +121,21 @@ fun CartScreen(viewModel: CartViewModel,
                                 fontSize = 25.sp,
                                 color = Color.Black,
                                 fontWeight = FontWeight.Bold
-                            )
+                            ),
+                            modifier = Modifier.align(Alignment.CenterHorizontally) // Căn giữa
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Button(
-                            onClick =    onCheckout,//{ /* Checkout logic */ },
+                            onClick = onCheckout,
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(50.dp)
-                                .background(
-                                    color = MaterialTheme.colorScheme.primary,
-                                    shape = RoundedCornerShape(12.dp)
-                                ),
-                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                                .height(50.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
+                            shape = RoundedCornerShape(12.dp)
                         ) {
                             Text("Thanh toán", fontSize = 17.sp)
                         }
                         Spacer(modifier = Modifier.height(8.dp))
-
                         Button(
                             onClick = {
                                 userId?.let {
@@ -141,7 +145,6 @@ fun CartScreen(viewModel: CartViewModel,
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(50.dp),
-                            //colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
                             colors = ButtonDefaults.buttonColors(containerColor = Color.Red),
                             shape = RoundedCornerShape(12.dp)
                         ) {
@@ -153,7 +156,7 @@ fun CartScreen(viewModel: CartViewModel,
                         }
                     }
                 } ?: Text(
-                    text = "Your cart is empty.",
+                    text = "Giỏ hàng của bạn trống.",
                     modifier = Modifier.align(Alignment.Center)
                 )
             }

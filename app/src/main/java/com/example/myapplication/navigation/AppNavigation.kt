@@ -1,5 +1,6 @@
 package com.example.myapplication.navigation
 
+import android.util.Log
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.CircularProgressIndicator
@@ -126,7 +127,23 @@ fun AppNavigation(
             //điều hướng tới ordersScreen
             composable("orders") {
                 OrderScreen(viewModel = orderViewModel,
+                    onOrderClick = { orderId ->
+                        navController.navigate("order_detail/$orderId")
+                    },
                     onBack = { navController.popBackStack() })
+
+
+            }
+            // điều hướng đến oderDetailScreen
+            composable("order_detail/{orderId}") { backStackEntry ->
+                val orderId = backStackEntry.arguments?.getString("orderId") ?: return@composable
+                Log.d("AppNavigation", "Navigating to OrderDetailScreen with orderId: $orderId") // Log kiểm tra
+
+                OrderDetailScreen(
+                    orderId = orderId,
+                    viewModel = orderViewModel,
+                    onBack = { navController.popBackStack() }
+                )
             }
 
             composable("cart") {
