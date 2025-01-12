@@ -15,6 +15,27 @@ class OrdersRepository(private val orderApi: OrderApi) {
         }
     }
 
+    // Lấy danh sách đơn hàng theo ID người dùng
+    suspend fun getOrdersByUserId(userId: String): List<OrderResponse> {
+        return try {
+            orderApi.getOrdersByUserId(userId)
+        } catch (e: Exception) {
+            throw Exception("Error fetching orders for user $userId: ${e.message}")
+        }
+    }
+
+    suspend fun getAllOrders(): List<OrderResponse> {
+        return orderApi.getAllOrders() // Gọi API từ backend
+    }
+
+//get productbyID
+suspend fun getProductById(productId: String): Product {
+    return try {
+        orderApi.getProductDetails(productId) // Gọi API lấy thông tin sản phẩm
+    } catch (e: Exception) {
+        throw Exception("Error fetching product details: ${e.message}")
+    }
+}
 //    // Lấy thông tin đơn hàng theo ID người dùng
 //    suspend fun getOrdersByUserId(userId: String): List<Order> {
 //        return try {

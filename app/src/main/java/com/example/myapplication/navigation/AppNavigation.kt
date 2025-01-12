@@ -123,6 +123,12 @@ fun AppNavigation(
                 }
             }
 
+            //điều hướng tới ordersScreen
+            composable("orders") {
+                OrderScreen(viewModel = orderViewModel,
+                    onBack = { navController.popBackStack() })
+            }
+
             composable("cart") {
                 CartScreen(
                     viewModel = cartViewModel,

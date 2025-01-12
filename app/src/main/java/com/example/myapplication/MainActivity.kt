@@ -6,6 +6,7 @@ import android.os.StrictMode
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.rememberNavController
 import com.example.myapplication.data.api.ApiService
@@ -22,6 +23,7 @@ import com.example.myapplication.viewmodel.CartViewModelFactory
 import com.example.myapplication.viewmodel.OrderViewModel
 import com.example.myapplication.viewmodel.OrderViewModelFactory
 import com.example.myapplication.data.repository.OrdersRepository
+import com.example.myapplication.utils.SharedPrefUtils
 import vn.zalopay.sdk.Environment
 import vn.zalopay.sdk.ZaloPaySDK
 
@@ -35,6 +37,13 @@ class MainActivity : ComponentActivity() {
 
         // Khởi tạo ZaloPay SDK
         ZaloPaySDK.init(2553, Environment.SANDBOX)
+
+        // Lấy userId từ SharedPreferences
+        val userId = SharedPrefUtils.getUserId(this) ?: run {
+            // Điều hướng đến màn hình đăng nhập nếu userId không tồn tại
+            finish()
+            return
+        }
 
         // Tạo các repository cần thiết
         val ordersRepository = OrdersRepository(ApiService.orderApi)
@@ -55,7 +64,7 @@ class MainActivity : ComponentActivity() {
                 factory = CartViewModelFactory(cartRepository)
             )
             val orderViewModel: OrderViewModel = viewModel(
-                factory = OrderViewModelFactory(ordersRepository)
+                factory = OrderViewModelFactory(ordersRepository, userId)
             )
 
             // Kiểm tra trạng thái đăng nhập
