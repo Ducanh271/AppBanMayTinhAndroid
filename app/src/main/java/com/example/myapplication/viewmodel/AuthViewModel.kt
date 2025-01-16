@@ -6,7 +6,6 @@ import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.myapplication.data.api.ApiService
-import com.example.myapplication.data.models.UserResponse
 import com.example.myapplication.data.repository.AuthRepository
 import com.example.myapplication.utils.SharedPrefUtils
 import kotlinx.coroutines.flow.MutableStateFlow

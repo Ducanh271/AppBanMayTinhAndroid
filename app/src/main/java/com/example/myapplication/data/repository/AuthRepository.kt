@@ -8,7 +8,6 @@ import com.google.gson.Gson
 import retrofit2.HttpException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import android.util.Log
 
 class AuthRepository(private val userApi: UserApi) {
 
@@ -30,7 +29,8 @@ class AuthRepository(private val userApi: UserApi) {
             } catch (e: Exception) {
                 null
             }
-            throw HttpException(response)
+            val errorMessage = errorJson?.message ?: "Login failed"
+            throw Exception(errorMessage)
         }
     }
 
@@ -41,7 +41,11 @@ class AuthRepository(private val userApi: UserApi) {
         return@withContext if (response.isSuccessful) {
             val signUpResponse = response.body()
             if (signUpResponse != null && signUpResponse.userId != null) {
-                getUserDetails(signUpResponse.userId)
+                User(
+                    id = signUpResponse.userId,
+                    name = name,
+                    email = email
+                )
             } else {
                 throw Exception("Invalid sign-up response: UserId is null")
             }
@@ -79,8 +83,9 @@ class AuthRepository(private val userApi: UserApi) {
             } catch (e: Exception) {
                 null
             }
-            throw Exception(errorJson?.message ?: "Failed to fetch user details")
+            val errorMessage = errorJson?.message ?: "Failed to fetch user details"
+            throw Exception(errorMessage)
         }
     }
-// Lớp để xử lý lỗi từ API
-data class ErrorResponse(val message: String?)}
+    // Lớp để xử lý lỗi từ API
+    data class ErrorResponse(val message: String?)}

@@ -13,5 +13,5 @@ data class User(
 )
 data class SignUpResponse(
     val message: String,
-    val userId: String // Trả về userId khi đăng ký thành công
+    val userId: String
 )
