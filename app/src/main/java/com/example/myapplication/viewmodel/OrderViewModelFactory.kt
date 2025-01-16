@@ -5,10 +5,9 @@ import androidx.lifecycle.ViewModelProvider
 import com.example.myapplication.data.repository.OrdersRepository
 
 class OrderViewModelFactory(
-    private val repository: OrdersRepository,
-    private val userId: String // Thêm userId
+    private val repository: OrdersRepository
 ) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        return OrderViewModel(repository, userId) as T
+        return OrderViewModel(repository) as T
     }
 }

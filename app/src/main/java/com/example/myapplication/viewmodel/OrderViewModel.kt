@@ -20,8 +20,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import java.lang.Thread.State
 
-class OrderViewModel(private val ordersRepository: OrdersRepository,
-                     private val userId: String // Truyền userId từ bên ngoài
+class OrderViewModel(private val ordersRepository: OrdersRepository
 ) : ViewModel() {
 
     //code cho OderScreen:
@@ -37,11 +36,6 @@ class OrderViewModel(private val ordersRepository: OrdersRepository,
     // StateFlow cho trạng thái tải dữ liệu
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading
-
-    // Hàm lấy danh sách orders
-    init {
-        fetchOrders(userId) // Truyền userId khi gọi fetchOrders
-    }
 
     fun fetchOrders(userId: String) {
         viewModelScope.launch {

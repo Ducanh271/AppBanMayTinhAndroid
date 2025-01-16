@@ -212,7 +212,7 @@ fun CheckoutScreen(
                     if (recipientName.isNotBlank() && recipientPhone.isNotBlank() && recipientAddress.isNotBlank()) {
                         userId?.let {
                             orderViewModel.handleCashOnDeliveryPayment(
-                                userId = it,
+                                userId = userId,
                                 product = product,
                                 recipientAddress = recipientAddress,
                                 recipientPhone = recipientPhone,

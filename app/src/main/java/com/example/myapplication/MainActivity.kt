@@ -38,12 +38,6 @@ class MainActivity : ComponentActivity() {
         // Khởi tạo ZaloPay SDK
         ZaloPaySDK.init(2553, Environment.SANDBOX)
 
-        // Lấy userId từ SharedPreferences
-        val userId = SharedPrefUtils.getUserId(this) ?: run {
-            // Điều hướng đến màn hình đăng nhập nếu userId không tồn tại
-            finish()
-            return
-        }
 
         // Tạo các repository cần thiết
         val ordersRepository = OrdersRepository(ApiService.orderApi)
@@ -64,7 +58,7 @@ class MainActivity : ComponentActivity() {
                 factory = CartViewModelFactory(cartRepository)
             )
             val orderViewModel: OrderViewModel = viewModel(
-                factory = OrderViewModelFactory(ordersRepository, userId)
+                factory = OrderViewModelFactory(ordersRepository)
             )
 
             // Kiểm tra trạng thái đăng nhập
