@@ -194,7 +194,7 @@ fun LoginScreen(
                 },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(50.dp)
+                    .height(70.dp)
                     .padding(horizontal = 8.dp) // Padding ngang cho nút
                     .padding(top = 16.dp)
             ) {
