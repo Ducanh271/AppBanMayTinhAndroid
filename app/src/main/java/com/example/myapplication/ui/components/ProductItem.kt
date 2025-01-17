@@ -2,14 +2,17 @@ package com.example.myapplication.ui.components
 
 import android.content.Context
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -56,20 +59,27 @@ fun ProductItem(
     ) {
         Column(
             modifier = Modifier.padding(8.dp),
-            horizontalAlignment = Alignment.CenterHorizontally // Căn giữa nội dung theo chiều ngang
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Image(
-                painter = rememberAsyncImagePainter(
-                    model = product.image,
-                    placeholder = painterResource(R.drawable.placeholder_image),
-                    error = painterResource(R.drawable.error_image)
-                ),
-                contentDescription = product.title,
-                contentScale = ContentScale.Fit,
+            Box(
                 modifier = Modifier
-                    .fillMaxWidth() // Căng ảnh theo chiều rộng
-                    .height(180.dp) // Chiều cao cố định
-            )
+                    .fillMaxWidth()
+                    .height(180.dp) // Chiều cao cố định của vùng chứa ảnh
+                    .background(Color.White, shape = RoundedCornerShape(12.dp)) // Hình chữ nhật bo góc
+                    .padding(8.dp) // Khoảng cách từ cạnh
+            ) {
+                // Hình ảnh sẽ được đặt lên trên hình chữ nhật bo góc
+                Image(
+                    painter = rememberAsyncImagePainter(
+                        model = product.image,
+                        placeholder = painterResource(R.drawable.placeholder_image),
+                        error = painterResource(R.drawable.error_image)
+                    ),
+                    contentDescription = product.title,
+                    contentScale = ContentScale.Fit, // Cắt hình ảnh để lấp đầy vùng chứa
+                    modifier = Modifier.fillMaxSize() // Ảnh lấp đầy vùng chứa
+                )
+            }
 
             Spacer(modifier = Modifier.height(8.dp))
 
@@ -104,6 +114,7 @@ fun ProductItem(
                 }
             }
         }
+
     }
 
     SnackbarHost(

@@ -118,27 +118,14 @@ fun CheckoutScreenCart(
             Spacer(modifier = Modifier.height(8.dp))
 
             // Form nhập thông tin
-            Text("Nhập thông tin thanh toán", style = MaterialTheme.typography.titleMedium)
-
-            OutlinedTextField(
-                value = recipientName,
-                onValueChange = { recipientName = it },
-                label = { Text("Họ và Tên người nhận") },
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            OutlinedTextField(
-                value = recipientPhone,
-                onValueChange = { recipientPhone = it },
-                label = { Text("Số điện thoại người nhận") },
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            OutlinedTextField(
-                value = recipientAddress,
-                onValueChange = { recipientAddress = it },
-                label = { Text("Địa chỉ nhận hàng") },
-                modifier = Modifier.fillMaxWidth()
+            // Nhập thông tin thanh toán
+            PaymentInfo(
+                recipientName = recipientName,
+                recipientPhone = recipientPhone,
+                recipientAddress = recipientAddress,
+                onNameChange = { recipientName = it },
+                onPhoneChange = { recipientPhone = it },
+                onAddressChange = { recipientAddress = it }
             )
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -311,4 +298,5 @@ fun CheckoutScreenCart(
         }
     }
 }
+
 

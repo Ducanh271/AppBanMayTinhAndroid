@@ -127,32 +127,111 @@ fun CheckoutScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
+//            // Nút "Thanh toán khi nhận hàng"
+//            Button(
+//                onClick = {
+//                    if (recipientName.isNotBlank() && recipientPhone.isNotBlank() && recipientAddress.isNotBlank()) {
+//                        userId?.let {
+//                            orderViewModel.handleCashOnDeliveryPayment(
+//                                userId = it,
+//                                product = product,
+//                                recipientAddress = recipientAddress,
+//                                recipientPhone = recipientPhone,
+//                                context = context,
+//                                onSuccess = { orderId ->
+//                                    recipientName = ""
+//                                    recipientPhone = ""
+//                                    recipientAddress = ""
+//                                   // product.price = 0.00
+//                                    savedOrderId = orderId // Lưu `orderId`
+//                                    showCountdown = true
+//                                    countdownTime = 3
+//                                },
+//                                onError = {
+//                                    Toast.makeText(context, "Đặt hàng thất bại!", Toast.LENGTH_SHORT).show()
+//                                }
+//                            )
+//                        } ?: Toast.makeText(context, "Vui lòng đăng nhập trước!", Toast.LENGTH_SHORT).show()
+//                    } else {
+//                        Toast.makeText(context, "Vui lòng nhập đầy đủ thông tin!", Toast.LENGTH_SHORT).show()
+//                    }
+//                },
+//                modifier = Modifier
+//                    .fillMaxWidth()
+//                    .height(50.dp),
+//                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF9800)),
+//                shape = RoundedCornerShape(6.dp)
+//            ) {
+//                Text("Đặt đơn hàng", fontSize = 17.sp, color = Color.White)
+//            }
+
+            //nút thanh toán đặt hàng neww
+
+            // Kiểm tra nếu thông tin đã đầy đủ
+            var showConfirmationDialog by remember { mutableStateOf(false) } // Trạng thái hiển thị hộp thoại
+            var isProcessing by remember { mutableStateOf(false) }
+            val isFormValid = recipientName.isNotBlank() && recipientPhone.isNotBlank() && recipientAddress.isNotBlank()
+
+            // Hiển thị hộp thoại xác nhận
+            if (showConfirmationDialog) {
+                AlertDialog(
+                    onDismissRequest = { showConfirmationDialog = false }, // Đóng hộp thoại khi nhấn ngoài
+                    title = { Text("Xác nhận đặt hàng?") },
+                    text = { Text("Bạn có chắc chắn muốn đặt đơn hàng này?") },
+                    confirmButton = {
+                        Button(
+                            onClick = {
+                                // Khi nhấn "Yes", tiếp tục quá trình đặt hàng
+                                if (isFormValid) {
+                                    userId?.let {
+                                        orderViewModel.handleCashOnDeliveryPayment(
+                                            userId = it,
+                                            product = product,
+                                            recipientAddress = recipientAddress,
+                                            recipientPhone = recipientPhone,
+                                            context = context,
+                                            onSuccess = { orderId ->
+                                                recipientName = ""
+                                                recipientPhone = ""
+                                                recipientAddress = ""
+                                                savedOrderId = orderId // Lưu `orderId`
+                                                showCountdown = true
+                                                countdownTime = 3
+                                            },
+                                            onError = {
+                                                Toast.makeText(context, "Đặt hàng thất bại!", Toast.LENGTH_SHORT).show()
+                                            }
+                                        )
+                                    } ?: Toast.makeText(context, "Vui lòng đăng nhập trước!", Toast.LENGTH_SHORT).show()
+                                }
+                                showConfirmationDialog = false // Đóng hộp thoại
+                            }
+                        ) {
+                            Text("Yes")
+                        }
+                    },
+                    dismissButton = {
+                        Button(
+                            onClick = {
+                                // Khi nhấn "No", chỉ đóng hộp thoại mà không làm gì thêm
+                                showConfirmationDialog = false
+                            }
+                        ) {
+                            Text("No")
+                        }
+                    }
+                )
+            }
+
             // Nút "Thanh toán khi nhận hàng"
             Button(
                 onClick = {
-                    if (recipientName.isNotBlank() && recipientPhone.isNotBlank() && recipientAddress.isNotBlank()) {
-                        userId?.let {
-                            orderViewModel.handleCashOnDeliveryPayment(
-                                userId = it,
-                                product = product,
-                                recipientAddress = recipientAddress,
-                                recipientPhone = recipientPhone,
-                                context = context,
-                                onSuccess = { orderId ->
-                                    recipientName = ""
-                                    recipientPhone = ""
-                                    recipientAddress = ""
-                                   // product.price = 0.00
-                                    savedOrderId = orderId // Lưu `orderId`
-                                    showCountdown = true
-                                    countdownTime = 3
-                                },
-                                onError = {
-                                    Toast.makeText(context, "Đặt hàng thất bại!", Toast.LENGTH_SHORT).show()
-                                }
-                            )
-                        } ?: Toast.makeText(context, "Vui lòng đăng nhập trước!", Toast.LENGTH_SHORT).show()
+                    // Kiểm tra thông tin trước khi hiển thị hộp thoại xác nhận
+                    if (isFormValid) {
+                        // Hiển thị hộp thoại xác nhận khi thông tin đầy đủ
+                        showConfirmationDialog = true
                     } else {
+                        // Nếu thông tin chưa đầy đủ, hiển thị thông báo
                         Toast.makeText(context, "Vui lòng nhập đầy đủ thông tin!", Toast.LENGTH_SHORT).show()
                     }
                 },
@@ -164,6 +243,7 @@ fun CheckoutScreen(
             ) {
                 Text("Đặt đơn hàng", fontSize = 17.sp, color = Color.White)
             }
+
 
 
             // Nút "Thanh toán bằng ZaloPay"
@@ -228,11 +308,10 @@ fun CheckoutScreen(
                     .height(50.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1E88E5)),
                 shape = RoundedCornerShape(6.dp)
+
             ) {
                 Text("Thanh toán bằng ZaloPay", fontSize = 17.sp, color = Color.White)
             }
-
-
 
 
         }
@@ -282,26 +361,62 @@ fun PaymentInfo(
     onPhoneChange: (String) -> Unit,
     onAddressChange: (String) -> Unit
 ) {
-    Text("Nhập thông tin địa chỉ thanh toán", style = MaterialTheme.typography.titleMedium)
-    OutlinedTextField(
-        value = recipientName,
-        onValueChange = onNameChange,
-        label = { Text("Họ và Tên người nhận") },
-        modifier = Modifier.fillMaxWidth()
-    )
-    OutlinedTextField(
-        value = recipientPhone,
-        onValueChange = onPhoneChange,
-        label = { Text("Số điện thoại người nhận") },
-        modifier = Modifier.fillMaxWidth()
-    )
-    OutlinedTextField(
-        value = recipientAddress,
-        onValueChange = onAddressChange,
-        label = { Text("Địa chỉ nhận hàng") },
-        modifier = Modifier.fillMaxWidth()
-    )
+    // Biến để kiểm tra hợp lệ số điện thoại
+    var isPhoneValid by remember { mutableStateOf(true) }
+
+    // Hàm kiểm tra hợp lệ số điện thoại
+    fun validatePhoneNumber(phone: String): Boolean {
+        val regex = Regex("^((\\+84)\\d{9}|\\d{10,12})$")
+        return phone.matches(regex)
+    }
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp), // Đặt padding cho toàn bộ Column
+        verticalArrangement = Arrangement.spacedBy(16.dp) // Khoảng cách đều giữa các hộp nhập
+    ) {
+        Text("Nhập thông tin địa chỉ thanh toán", style = MaterialTheme.typography.titleMedium)
+
+        // Nhập họ tên
+        OutlinedTextField(
+            value = recipientName,
+            onValueChange = onNameChange,
+            label = { Text("Họ và Tên người nhận") },
+            modifier = Modifier.fillMaxWidth()
+        )
+        Spacer(modifier = Modifier.height(1.dp))
+
+        // Nhập số điện thoại
+        OutlinedTextField(
+            value = recipientPhone,
+            onValueChange = { newPhone ->
+                onPhoneChange(newPhone)
+                // Kiểm tra hợp lệ nếu số điện thoại không trống
+                isPhoneValid = newPhone.isEmpty() || validatePhoneNumber(newPhone)
+            },
+            label = { Text("Số điện thoại người nhận") },
+            isError = !isPhoneValid, // Đánh dấu lỗi nếu không hợp lệ
+            modifier = Modifier.fillMaxWidth(),
+            supportingText = {
+                if (!isPhoneValid && recipientPhone.isNotEmpty()) {
+                    Text("Số điện thoại không hợp lệ", color = Color.Red)
+                }
+            }
+        )
+
+        // Nhập địa chỉ nhận hàng
+        OutlinedTextField(
+            value = recipientAddress,
+            onValueChange = onAddressChange,
+            label = { Text("Địa chỉ nhận hàng") },
+            modifier = Modifier.fillMaxWidth()
+        )
+    }
 }
+
+
+
 
 @Composable
 fun CountdownDisplay(countdownTime: Int) {
