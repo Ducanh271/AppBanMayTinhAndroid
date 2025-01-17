@@ -73,6 +73,16 @@ dependencies {
     implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.0")
 
     implementation ("androidx.lifecycle:lifecycle-runtime-ktx:2.5.0")
+    implementation(fileTree(mapOf(
+        "dir" to "D:\\TACN\\AppBanMayTinhAndroid\\librarry",
+        "include" to listOf("*.aar", "*.jar"),
+        "exclude" to listOf("")
+    )))
+    implementation(fileTree(mapOf(
+        "dir" to "D:\\TACN\\AppBanMayTinhAndroid\\librarry",
+        "include" to listOf("*.aar", "*.jar"),
+        "exclude" to listOf("")
+    )))
 
 
     debugImplementation(libs.androidx.ui.tooling)

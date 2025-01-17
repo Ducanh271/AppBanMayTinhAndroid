@@ -18,7 +18,7 @@ fun EditAccountScreen(
     val context = LocalContext.current
     var name by remember { mutableStateOf(SharedPrefUtils.getUserName(context) ?: "") }
     var email by remember { mutableStateOf(SharedPrefUtils.getUserEmail(context) ?: "") }
-
+    val userId = SharedPrefUtils.getUserId(context) ?: ""
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -51,8 +51,8 @@ fun EditAccountScreen(
 
         Button(
             onClick = {
-                SharedPrefUtils.saveUserName(context, name)
-                SharedPrefUtils.saveUserEmail(context, email)
+                // Gọi hàm cập nhật thông tin người dùng trong ViewModel
+                    authViewModel.updateUser(userId, name, email, context)
                 navController.popBackStack() // Quay lại màn hình tài khoản
             },
             modifier = Modifier.fillMaxWidth()

@@ -21,4 +21,8 @@ interface UserApi {
 
     @GET("/api/users/{userId}")
     suspend fun getUserDetails(@Path("userId") userId: String): Response<User>
+    @POST("/api/users/{userId}")
+    suspend fun updateUserDetails( @Path("userId") userId: String,
+                                   @Body name: String,
+                                   @Body email: String): Response<User>
 }

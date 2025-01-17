@@ -87,5 +87,32 @@ class AuthRepository(private val userApi: UserApi) {
             throw Exception(errorMessage)
         }
     }
+    // Cập nhật thông tin chi tiết người dùng
+    suspend fun updateUserDetails(userId: String, name:String, email: String): User = withContext(Dispatchers.IO) {
+        val response = userApi.updateUserDetails(userId, name, email)
+
+        return@withContext if (response.isSuccessful) {
+            val userResponse = response.body()
+            if (userResponse != null) {
+                // Xử lý nullable trước khi khởi tạo User
+                User(
+                    id = userResponse.id ?: throw Exception("User ID is missing"),
+                    name = userResponse.name ?: "Unknown",
+                    email = userResponse.email ?: "Unknown"
+                )
+            } else {
+                throw Exception("Invalid user details response: User is null")
+            }
+        } else {
+            val errorBody = response.errorBody()?.string()
+            val errorJson = try {
+                Gson().fromJson(errorBody, ErrorResponse::class.java)
+            } catch (e: Exception) {
+                null
+            }
+            val errorMessage = errorJson?.message ?: "Failed to fetch user details"
+            throw Exception(errorMessage)
+        }
+    }
     // Lớp để xử lý lỗi từ API
     data class ErrorResponse(val message: String?)}
