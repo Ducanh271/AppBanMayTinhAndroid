@@ -233,12 +233,12 @@ fun AppNavigation(
                     authViewModel = authViewModel
                 )}
 
-                composable("edit") {
-                    EditAccountScreen(
-                        navController = navController,
-                        authViewModel = authViewModel
-                    )
+            composable("edit_account") {
+                EditAccountScreen(
+                    navController = navController,
+                    authViewModel = authViewModel
+                )
             }
         }
+        }
     }
-}

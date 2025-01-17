@@ -112,4 +112,20 @@ class AuthViewModel(private val repository: AuthRepository) : ViewModel() {
         _isLoggedIn.value = false
         _loginState.value = LoginState()
     }
+    fun updateUser(userId: String, name: String, email: String, context: Context) {
+        viewModelScope.launch {
+            try {
+                // Gọi repository để cập nhật thông tin người dùng
+                val user = repository.updateUserDetails(userId, name, email)
+
+                // Lưu thông tin người dùng vào SharedPreferences
+                SharedPrefUtils.saveUserName(context, user.name ?: "")
+                SharedPrefUtils.saveUserEmail(context, user.email ?: "")
+                Toast.makeText(context, "Cập nhật thành công", Toast.LENGTH_SHORT).show()
+
+            } catch (e: Exception) {
+                Toast.makeText(context, "Cập nhật thất bại: ${e.message}", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
 }
