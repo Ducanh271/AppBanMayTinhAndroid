@@ -37,8 +37,10 @@ fun BottomNavigationBar(
             label = { Text("Tin nhắn") },
             selected = selectedTab == 2,
             onClick = {
-                onTabSelected(2)
-
+                onTabSelected(2) // Update selectedTab through the callback
+                navController.navigate("chat") {
+                    //popUpTo("chat") { inclusive = true }
+                }
             }
         )
         NavigationBarItem(

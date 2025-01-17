@@ -19,6 +19,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import java.lang.Thread.State
+import kotlinx.coroutines.delay
+
 
 class OrderViewModel(private val ordersRepository: OrdersRepository
 ) : ViewModel() {
@@ -67,16 +69,15 @@ class OrderViewModel(private val ordersRepository: OrdersRepository
         }
     }
 
-
-    //Petch Product order
-
-
+//Xu ly thanh toan don le 1 san pham
     fun handleCashOnDeliveryPayment(
         userId: String,
         product: Product,
         recipientAddress: String,
         recipientPhone: String,
-        context: Context
+        context: Context,
+        onSuccess: (orderId: String) -> Unit, // Callback khi thành công
+        onError: () -> Unit // Callback khi thất bại
     ) {
         val orderRequest = CreateOrderRequest(
             userId = userId,
@@ -89,49 +90,46 @@ class OrderViewModel(private val ordersRepository: OrdersRepository
             try {
                 val response = ordersRepository.createOrder(orderRequest)
                 if (response.isSuccessful) {
-                    Toast.makeText(context, "Đặt hàng thành công! Mã đơn: ${response.body()?.orderId}", Toast.LENGTH_LONG).show()
+                    // Lấy orderId từ phản hồi
+                    val orderId = response.body()?.orderId
+                    if (orderId != null) {
+                        // Hiển thị thông báo đặt hàng thành công
+                        Toast.makeText(
+                            context,
+                            "Đặt hàng thành công! Mã đơn: $orderId",
+                            Toast.LENGTH_SHORT
+                        ).show()
+
+                        // Gọi callback thành công với orderId
+                        onSuccess(orderId)
+                    } else {
+                        // Nếu orderId là null
+                        Toast.makeText(
+                            context,
+                            "Đặt hàng thành công nhưng không lấy được mã đơn!",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                        onError()
+                    }
                 } else {
-                    Toast.makeText(context, "Đặt hàng thất bại: ${response.message()}", Toast.LENGTH_LONG).show()
+                    // Xử lý khi phản hồi thất bại
+                    Toast.makeText(
+                        context,
+                        "Đặt hàng thất bại: ${response.message()}",
+                        Toast.LENGTH_LONG
+                    ).show()
+                    onError()
                 }
             } catch (e: Exception) {
+                // Xử lý khi xảy ra lỗi
                 Toast.makeText(context, "Lỗi mạng: ${e.message}", Toast.LENGTH_LONG).show()
+                onError()
             }
         }
     }
 
 
-    //handleCassh zalo pay rieng
-    fun handleCashOnDeliveryPayment_ZaloPay(
-        userId: String,
-        product: Product,
-        recipientAddress: String,
-        recipientPhone: String,
-        context: Context
-    ) {
-        val orderRequest = CreateOrderRequest(
-            userId = userId,
-            items = listOf(OrderItemRequest(productId = product.id, quantity = 1)),
-            address = recipientAddress,
-            phoneNumber = recipientPhone
-        )
-
-        viewModelScope.launch {
-            try {
-                val response = ordersRepository.createOrder(orderRequest)
-                if (response.isSuccessful) {
-                    Toast.makeText(context, "Đặt hàng thành công! Mã đơn: ${response.body()?.orderId}", Toast.LENGTH_LONG).show()
-                } else {
-                    Toast.makeText(context, "Đặt hàng thất bại: ${response.message()}", Toast.LENGTH_LONG).show()
-                }
-            } catch (e: Exception) {
-                Toast.makeText(context, "Lỗi mạng: ${e.message}", Toast.LENGTH_LONG).show()
-            }
-        }
-    }
-
-
-
-    //   try new code thanh toan nhieu san pham tu gio hang
+    //   thanh toan nhieu san pham tu gio hang
 
     fun handleCartCashOnDeliveryPayment(
         userId: String,

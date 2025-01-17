@@ -62,18 +62,19 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
-
-
     implementation(fileTree(mapOf(
-        "dir" to "D:\\TACN\\AppBanMayTinhAndroid\\librarry",
+        "dir" to "D:\\Download\\Downloads\\Developer\\16_nobug_dev\\AppBanMayTinhAndroid\\librarry",
         "include" to listOf("*.aar", "*.jar"),
         "exclude" to listOf("")
     )))
-    implementation(fileTree(mapOf(
-        "dir" to "D:\\AAA\\AppBanMayTinhAndroid\\librarry",
-        "include" to listOf("*.aar", "*.jar"),
-        "exclude" to listOf("")
-    )))
+
+
+    //LifecycleScope
+    implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.0")
+
+    implementation ("androidx.lifecycle:lifecycle-runtime-ktx:2.5.0")
+
+
     debugImplementation(libs.androidx.ui.tooling)
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.2")
 

@@ -33,17 +33,36 @@ import java.util.Locale
 fun CheckoutScreenCart(
     viewModel: CartViewModel,
     orderViewModel: OrderViewModel, // Thêm OrderViewModel
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    onNavigateToHome: () -> Unit
 ) {
     val context = LocalContext.current
     val cartState = viewModel.cartState.collectAsState().value
     val totalPrice = viewModel.calculateTotalPrice()
     val userId = SharedPrefUtils.getUserId(context) // Lấy userId từ SharedPreferences
+    // Trạng thái ngăn spam và hiển thị đếm ngược
+    var isProcessing by remember { mutableStateOf(false) }
+    var showCountdown by remember { mutableStateOf(false) }
+    var countdownTime by remember { mutableStateOf(3) }
+
     val scope = rememberCoroutineScope() // Sử dụng coroutine trong Composable
 
     var recipientName by remember { mutableStateOf("") }
     var recipientPhone by remember { mutableStateOf("") }
     var recipientAddress by remember { mutableStateOf("") }
+
+    // Đếm ngược và chuyển về trang chính
+    if (showCountdown) {
+        LaunchedEffect(countdownTime) {
+            if (countdownTime > 0) {
+                kotlinx.coroutines.delay(1000L) // Đếm ngược mỗi giây
+                countdownTime -= 1
+            } else {
+                showCountdown = false
+                onNavigateToHome() // Chuyển về màn hình chính
+            }
+        }
+    }
 
     // Hàm định dạng tiền tệ VND
     fun formatCurrency(amount: Double): String {
@@ -152,6 +171,28 @@ fun CheckoutScreenCart(
                                     userId.let {
                                         viewModel.clearCart(it)
                                     }
+                                    // Reset thông tin
+                                    recipientName = ""
+                                    recipientPhone = ""
+                                    recipientAddress = ""
+
+                                    // Hiển thị thông báo thành công
+                                    Toast.makeText(context, "Đặt hàng thành công!", Toast.LENGTH_SHORT).show()
+
+
+                                    // Hiển thị đếm ngược và quay lại màn hình chính
+                                    showCountdown = true // Bật hiển thị đếm ngược
+                                    countdownTime = 3 // Đặt lại thời gian đếm ngược
+
+                                    // Đếm ngược quay lại màn hình chính
+                                    while (countdownTime > 0) {
+                                        kotlinx.coroutines.delay(1000L) // Chờ 1 giây
+                                        countdownTime -= 1
+                                    }
+
+                                    // Kết thúc đếm ngược, quay lại màn hình chính
+                                    showCountdown = false
+                                    onNavigateToHome()
                                 } catch (e: Exception) {
                                     Toast.makeText(context, "Đặt hàng thất bại: ${e.message}", Toast.LENGTH_SHORT).show()
                                 }
@@ -163,12 +204,110 @@ fun CheckoutScreenCart(
                         Toast.makeText(context, "Vui lòng nhập đầy đủ thông tin!", Toast.LENGTH_SHORT).show()
                     }
                 },
-                modifier = Modifier.fillMaxWidth().height(45.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(45.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF9800)),
                 shape = RoundedCornerShape(6.dp),
             ) {
                 Text(text = "Thanh toán khi nhận hàng", fontSize = 17.sp, color = Color.White)
             }
+
+            //zalopay
+            Button(
+                onClick = {
+                    if (recipientName.isNotBlank() && recipientPhone.isNotBlank() && recipientAddress.isNotBlank()) {
+
+                        val orderApi = CreateOrder()
+                        val amountt = totalPrice.toInt().toString()  // Convert totalPrice directly to string
+                        try {
+                            val data = orderApi.createOrder(amountt)  // Pass the string directly
+                            val code = data.getString("return_code")
+
+                            if (code == "1") {
+                                val token = data.getString("zp_trans_token")
+                                if (token.isNullOrEmpty()) {
+                                    Toast.makeText(context, "Lỗi nhận token thanh toán", Toast.LENGTH_SHORT).show()
+                                    return@Button
+                                }
+
+                                ZaloPaySDK.getInstance().payOrder(
+                                    context as MainActivity,
+                                    token,
+                                    "demozpdk://app",
+                                    object : PayOrderListener {
+                                        override fun onPaymentSucceeded(result: String?, message: String?, zpTransToken: String?) {
+                                            Toast.makeText(context, "Thanh toán thành công!", Toast.LENGTH_SHORT).show()
+
+                                            // Đảm bảo sau khi thanh toán thành công mới gửi thông tin đơn hàng lên server và xóa giỏ hàng
+                                            if (userId != null) {
+                                                scope.launch {
+                                                    try {
+                                                        // Chuyển đổi từ CartItem sang OrderItem
+                                                        val orderItems = cartState?.items?.map { cartItem ->
+                                                            OrderItemRequest(
+                                                                productId = cartItem.productId,
+                                                                quantity = cartItem.quantity
+                                                            )
+                                                        } ?: emptyList()
+
+                                                        // Gửi thông tin đơn hàng lên server
+                                                        orderViewModel.handleCartCashOnDeliveryPayment(
+                                                            userId = userId,
+                                                            orderItems = orderItems,
+                                                            recipientPhone = recipientPhone,
+                                                            recipientAddress = recipientAddress,
+                                                            context = context,
+                                                        )
+
+                                                        // Xóa giỏ hàng sau khi đơn hàng đã được tạo thành công
+                                                        viewModel.clearCart(userId)
+                                                        // Reset thông tin
+                                                        recipientName = ""
+                                                        recipientPhone = ""
+                                                        recipientAddress = ""
+                                                    } catch (e: Exception) {
+                                                        Toast.makeText(context, "Đặt hàng thất bại: ${e.message}", Toast.LENGTH_SHORT).show()
+                                                    }
+                                                }
+                                            }
+                                        }
+
+                                        override fun onPaymentCanceled(p0: String?, p1: String?) {
+                                            Toast.makeText(context, "Thanh toán bị hủy!", Toast.LENGTH_SHORT).show()
+                                        }
+
+                                        override fun onPaymentError(error: ZaloPayError?, message: String?, description: String?) {
+                                            Toast.makeText(context, "Lỗi thanh toán: $message", Toast.LENGTH_SHORT).show()
+                                        }
+                                    }
+                                )
+                            } else {
+                                Toast.makeText(context, "Lỗi tạo đơn hàng: $code", Toast.LENGTH_SHORT).show()
+                            }
+
+                        } catch (e: Exception) {
+                            Toast.makeText(context, "Lỗi kết nối: ${e.message}", Toast.LENGTH_SHORT).show()
+                        }
+                    } else {
+                        Toast.makeText(context, "Vui lòng nhập đầy đủ thông tin!", Toast.LENGTH_SHORT).show()
+                    }
+                },
+                modifier = Modifier.fillMaxWidth().height(45.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1E88E5)), // Màu xanh cho ZaloPay
+                shape = RoundedCornerShape(6.dp),
+            ) {
+                Text(
+                    text = "Thanh toán bằng ZaloPay",
+                    fontSize = 17.sp,
+                    color = Color.White
+                )
+            }
+
+
+
+
+
         }
     }
 }

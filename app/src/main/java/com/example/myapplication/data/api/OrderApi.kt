@@ -32,6 +32,13 @@ interface OrderApi {
     @DELETE("/orders/{id}")
     suspend fun cancelOrder(@Path("orderId") orderId: String): ApiResponse
 
+    // Cập nhật trạng thái đơn hàng
+    @POST("/api/orders/{orderId}/status")
+    suspend fun updateOrderStatus(
+        @Path("orderId") orderId: String,
+        @Body status: Map<String, String> // Truyền vào trạng thái đơn hàng
+    ): Response<ApiResponse>
 }
+
 
 
