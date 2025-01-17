@@ -11,7 +11,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.example.myapplication.data.models.AddToCartRequest
 import com.example.myapplication.ui.screens.*
 import com.example.myapplication.utils.SharedPrefUtils
 import com.example.myapplication.utils.LocalUserId
@@ -187,7 +186,13 @@ fun AppNavigation(
                 AccountScreen(
                     navController = navController,
                     authViewModel = authViewModel
-                )
+                )}
+
+                composable("edit") {
+                    EditAccountScreen(
+                        navController = navController,
+                        authViewModel = authViewModel
+                    )
             }
         }
     }

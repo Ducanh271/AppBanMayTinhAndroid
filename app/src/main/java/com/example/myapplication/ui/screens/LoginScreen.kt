@@ -28,6 +28,7 @@ import com.example.myapplication.utils.AccountPreferences
 import com.example.myapplication.viewmodel.AuthViewModel
 import androidx.compose.foundation.clickable
 import android.widget.Toast
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 
 
@@ -85,8 +86,8 @@ fun LoginScreen(
             Text(
                 text = "Đăng nhập",
                 style = MaterialTheme.typography.headlineMedium,
-                color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.padding(bottom = 24.dp) // Tạo khoảng cách dưới tiêu đề
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(bottom = 32.dp)
             )
 
             // Danh sách gợi ý tài khoản (hiển thị phía trên trường nhập email)
