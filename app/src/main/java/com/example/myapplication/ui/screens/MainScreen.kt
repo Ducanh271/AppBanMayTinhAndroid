@@ -160,6 +160,7 @@ fun MainScreen(
                             containerColor = MaterialTheme.colorScheme.primary
                         )
                     )
+
                     if (categories.isNotEmpty()) {
                         val allCategories = listOf("Tất cả sản phẩm") + categories
                         ScrollableTabRow(selectedTabIndex = selectedTabTopRow, edgePadding = 8.dp) {
@@ -167,9 +168,10 @@ fun MainScreen(
                                 Tab(
                                     selected = selectedTabTopRow == index,
                                     onClick = {
-                                        viewModel.selectedCategory.value = category
+                                        viewModel.selectedCategory.value = category // Cập nhật selectedCategory
                                         selectedTabTopRow = index
-                                        if (category == "All") {
+                                        if (category == "Tất cả sản phẩm") {
+
                                             viewModel.fetchProducts()
                                         } else {
                                             viewModel.fetchProductsByCategory(category)
@@ -182,6 +184,7 @@ fun MainScreen(
                     } else {
                         LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
                     }
+
                 }
             },
             bottomBar = {

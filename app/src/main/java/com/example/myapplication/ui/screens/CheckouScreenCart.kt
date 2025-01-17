@@ -197,7 +197,7 @@ fun CheckoutScreenCart(
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF9800)),
                 shape = RoundedCornerShape(6.dp),
             ) {
-                Text(text = "Thanh toán khi nhận hàng", fontSize = 17.sp, color = Color.White)
+                Text(text = "Đặt đơn hàng", fontSize = 17.sp, color = Color.White)
             }
 
             //zalopay
