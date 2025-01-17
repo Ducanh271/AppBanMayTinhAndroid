@@ -5,7 +5,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
 object ApiService {
-    private const val BASE_URL = "http://192.168.97.36:3000/"
+    private const val BASE_URL = "http://10.0.2.2:3000/"
     // Đổi IP tương ứng trong mạng LAN
 
     // Tạo Retrofit instance chung

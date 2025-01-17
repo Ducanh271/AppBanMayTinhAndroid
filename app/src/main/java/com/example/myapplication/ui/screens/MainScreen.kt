@@ -169,7 +169,7 @@ fun MainScreen(
                                     onClick = {
                                         viewModel.selectedCategory.value = category
                                         selectedTabTopRow = index
-                                        if (category == "All") {
+                                        if (category == "Tất cả sản phẩm") {
                                             viewModel.fetchProducts()
                                         } else {
                                             viewModel.fetchProductsByCategory(category)
