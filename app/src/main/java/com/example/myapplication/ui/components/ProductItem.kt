@@ -65,7 +65,7 @@ fun ProductItem(
                     error = painterResource(R.drawable.error_image)
                 ),
                 contentDescription = product.title,
-                contentScale = ContentScale.Crop,
+                contentScale = ContentScale.Fit,
                 modifier = Modifier
                     .fillMaxWidth() // Căng ảnh theo chiều rộng
                     .height(180.dp) // Chiều cao cố định

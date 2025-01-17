@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -11,67 +12,80 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
-import androidx.compose.material.icons.filled.ArrowBack
 
 data class Message(val content: String, val isSentByUser: Boolean)
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ChatScreen(
-    onBack: () -> Unit // Thêm tham số `onBack`
+    onBack: () -> Unit // Tham số `onBack` để xử lý quay lại
 ) {
-    // Nội dung giao diện chat
-    Box(modifier = Modifier.fillMaxSize()) {
-        Text("Chat Screen", modifier = Modifier.align(Alignment.Center))
-        IconButton(onClick = onBack, modifier = Modifier.align(Alignment.TopStart)) {
-            Icon(Icons.Default.ArrowBack, contentDescription = "Back")
-        }
-    }
-
     // Danh sách tin nhắn (giả lập)
     var messages by remember { mutableStateOf(listOf<Message>()) }
     var textState by remember { mutableStateOf(TextFieldValue("")) }
 
-    Column(modifier = Modifier.fillMaxSize()) {
-        // Danh sách tin nhắn
-        LazyColumn(
-            modifier = Modifier
-                .weight(1f)
-                .fillMaxWidth(),
-            contentPadding = PaddingValues(8.dp)
-        ) {
-            items(messages) { message ->
-                MessageBubble(message)
-            }
-        }
-
-        // Trường nhập và nút gửi tin nhắn
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(8.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            TextField(
-                value = textState,
-                onValueChange = { textState = it },
-                modifier = Modifier.weight(1f),
-                placeholder = { Text("Aa") }
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            IconButton(
-                onClick = {
-                    if (textState.text.isNotBlank()) {
-                        messages = messages + Message(textState.text, true)
-                        textState = TextFieldValue("") // Xóa trường nhập
+    // Sử dụng Scaffold với TopAppBar để hiển thị nút Back
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Tin nhắn") },
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Back")
                     }
-                }
+                },
+                colors = TopAppBarDefaults.mediumTopAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    titleContentColor = MaterialTheme.colorScheme.onPrimary
+                )
+            )
+        }
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+        ) {
+            // Danh sách tin nhắn
+            LazyColumn(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth(),
+                contentPadding = PaddingValues(8.dp)
             ) {
-                Icon(imageVector = Icons.Default.Send, contentDescription = "Send")
+                items(messages) { message ->
+                    MessageBubble(message)
+                }
+            }
+
+            // Trường nhập và nút gửi tin nhắn
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                TextField(
+                    value = textState,
+                    onValueChange = { textState = it },
+                    modifier = Modifier.weight(1f),
+                    placeholder = { Text("Aa") }
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                IconButton(
+                    onClick = {
+                        if (textState.text.isNotBlank()) {
+                            messages = messages + Message(textState.text, true)
+                            textState = TextFieldValue("") // Xóa trường nhập
+                        }
+                    }
+                ) {
+                    Icon(imageVector = Icons.Default.Send, contentDescription = "Send")
+                }
             }
         }
     }
 }
-
 
 @Composable
 fun MessageBubble(message: Message) {

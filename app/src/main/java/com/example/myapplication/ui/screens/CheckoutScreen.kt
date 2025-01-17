@@ -39,18 +39,43 @@ import vn.zalopay.sdk.ZaloPaySDK
 import vn.zalopay.sdk.listeners.PayOrderListener
 import java.text.NumberFormat
 import java.util.Locale
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
+
+
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CheckoutScreen(
     orderViewModel: OrderViewModel,
     product: Product,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    onNavigateToOrderDetail: (String) -> Unit
 ) {
     var recipientName by remember { mutableStateOf("") }
     var recipientPhone by remember { mutableStateOf("") }
     var recipientAddress by remember { mutableStateOf("") }
     val context = LocalContext.current
     val userId = SharedPrefUtils.getUserId(context)
+
+    // Trạng thái
+    var isProcessing by remember { mutableStateOf(false) }
+    var showCountdown by remember { mutableStateOf(false) }
+    var countdownTime by remember { mutableStateOf(3) }
+    var savedOrderId by remember { mutableStateOf<String?>(null) } // Lưu `orderId`
+
+    // Hàm đếm ngược và chuyển hướng
+    if (showCountdown) {
+        LaunchedEffect(countdownTime) {
+            if (countdownTime > 0) {
+                kotlinx.coroutines.delay(1000L)
+                countdownTime -= 1
+            } else {
+                showCountdown = false
+                savedOrderId?.let { onNavigateToOrderDetail(it) } // Điều hướng với `orderId`
+            }
+        }
+    }
 
     // Hàm định dạng tiền tệ
     fun formatCurrency(amount: Double): String {
@@ -83,74 +108,63 @@ fun CheckoutScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             // Thông tin sản phẩm
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                // Ảnh sản phẩm
-                Image(
-                    painter = rememberAsyncImagePainter(product.image),
-                    contentDescription = product.title,
-                    contentScale = ContentScale.Fit,
-                    modifier = Modifier
-                        .size(150.dp)
-                )
+            ProductInfo(product = product, formatCurrency = ::formatCurrency)
 
-                // Thông tin sản phẩm
-                Column(
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Text(
-                        text = product.title,
-                        style = MaterialTheme.typography.headlineMedium,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = "Tổng thanh toán",
-                        style = MaterialTheme.typography.labelLarge,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = formatCurrency(product.price),
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                }
+            // Nhập thông tin thanh toán
+            PaymentInfo(
+                recipientName = recipientName,
+                recipientPhone = recipientPhone,
+                recipientAddress = recipientAddress,
+                onNameChange = { recipientName = it },
+                onPhoneChange = { recipientPhone = it },
+                onAddressChange = { recipientAddress = it }
+            )
+
+            // Hiển thị đếm ngược
+            if (showCountdown) {
+                CountdownDisplay(countdownTime)
             }
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Nhập thông tin thanh toán
-            Text("Nhập thông tin địa chỉ thanh toán", style = MaterialTheme.typography.titleMedium)
+            // Nút "Thanh toán khi nhận hàng"
+            Button(
+                onClick = {
+                    if (recipientName.isNotBlank() && recipientPhone.isNotBlank() && recipientAddress.isNotBlank()) {
+                        userId?.let {
+                            orderViewModel.handleCashOnDeliveryPayment(
+                                userId = it,
+                                product = product,
+                                recipientAddress = recipientAddress,
+                                recipientPhone = recipientPhone,
+                                context = context,
+                                onSuccess = { orderId ->
+                                    recipientName = ""
+                                    recipientPhone = ""
+                                    recipientAddress = ""
+                                   // product.price = 0.00
+                                    savedOrderId = orderId // Lưu `orderId`
+                                    showCountdown = true
+                                    countdownTime = 3
+                                },
+                                onError = {
+                                    Toast.makeText(context, "Đặt hàng thất bại!", Toast.LENGTH_SHORT).show()
+                                }
+                            )
+                        } ?: Toast.makeText(context, "Vui lòng đăng nhập trước!", Toast.LENGTH_SHORT).show()
+                    } else {
+                        Toast.makeText(context, "Vui lòng nhập đầy đủ thông tin!", Toast.LENGTH_SHORT).show()
+                    }
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(50.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF9800)),
+                shape = RoundedCornerShape(6.dp)
+            ) {
+                Text("Đặt đơn hàng", fontSize = 17.sp, color = Color.White)
+            }
 
-            OutlinedTextField(
-                value = recipientName,
-                onValueChange = { recipientName = it },
-                label = { Text("Họ và Tên người nhận") },
-                modifier = Modifier.fillMaxWidth()
-            )
-            OutlinedTextField(
-                value = recipientPhone,
-                onValueChange = { recipientPhone = it },
-                label = { Text("Số điện thoại người nhận") },
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            OutlinedTextField(
-                value = recipientAddress,
-                onValueChange = { recipientAddress = it },
-                label = { Text("Địa chỉ nhận hàng") },
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
 
             // Nút "Thanh toán bằng ZaloPay"
             Button(
@@ -158,7 +172,7 @@ fun CheckoutScreen(
                     if (recipientName.isNotBlank() && recipientPhone.isNotBlank() && recipientAddress.isNotBlank()) {
                         val orderApi = CreateOrder()
                         try {
-                            val data = orderApi.createOrder(product.price.toString())
+                            val data = orderApi.createOrder(product.price.toInt().toString())
                             val code = data.getString("return_code")
                             if (code == "1") {
                                 val token = data.getString("zp_trans_token")
@@ -170,12 +184,24 @@ fun CheckoutScreen(
                                         override fun onPaymentSucceeded(result: String?, message: String?, zpTransToken: String?) {
                                             Toast.makeText(context, "Thanh toán thành công!", Toast.LENGTH_SHORT).show()
                                             userId?.let {
-                                                orderViewModel.handleCashOnDeliveryPayment_ZaloPay(
+                                                orderViewModel.handleCashOnDeliveryPayment(
                                                     userId = it,
                                                     product = product,
                                                     recipientAddress = recipientAddress,
                                                     recipientPhone = recipientPhone,
-                                                    context = context
+                                                    context = context,
+                                                    onSuccess = { orderId ->
+                                                        recipientName = ""
+                                                        recipientPhone = ""
+                                                        recipientAddress = ""
+                                                        // product.price = 0.00
+                                                        savedOrderId = orderId // Lưu `orderId`
+                                                        showCountdown = true
+                                                        countdownTime = 3
+                                                    },
+                                                    onError = {
+                                                        Toast.makeText(context, "Đặt hàng thất bại!", Toast.LENGTH_SHORT).show()
+                                                    }
                                                 )
                                             }
                                         }
@@ -206,31 +232,89 @@ fun CheckoutScreen(
                 Text("Thanh toán bằng ZaloPay", fontSize = 17.sp, color = Color.White)
             }
 
-            // Nút "Thanh toán khi nhận hàng"
-            Button(
-                onClick = {
-                    if (recipientName.isNotBlank() && recipientPhone.isNotBlank() && recipientAddress.isNotBlank()) {
-                        userId?.let {
-                            orderViewModel.handleCashOnDeliveryPayment(
-                                userId = userId,
-                                product = product,
-                                recipientAddress = recipientAddress,
-                                recipientPhone = recipientPhone,
-                                context = context
-                            )
-                        } ?: Toast.makeText(context, "Vui lòng đăng nhập trước!", Toast.LENGTH_SHORT).show()
-                    } else {
-                        Toast.makeText(context, "Vui lòng nhập đầy đủ thông tin!", Toast.LENGTH_SHORT).show()
-                    }
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(50.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF9800)),
-                shape = RoundedCornerShape(6.dp)
-            ) {
-                Text("Thanh toán khi nhận hàng", fontSize = 17.sp, color = Color.White)
-            }
+
+
+
         }
+    }
+}
+
+@Composable
+fun ProductInfo(product: Product, formatCurrency: (Double) -> String) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+        horizontalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        Image(
+            painter = rememberAsyncImagePainter(product.image),
+            contentDescription = product.title,
+            contentScale = ContentScale.Fit,
+            modifier = Modifier.size(150.dp)
+        )
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = product.title,
+                style = MaterialTheme.typography.headlineMedium,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.fillMaxWidth()
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text("Tổng thanh toán", style = MaterialTheme.typography.labelLarge)
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = formatCurrency(product.price),
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary
+            )
+        }
+    }
+}
+
+@Composable
+fun PaymentInfo(
+    recipientName: String,
+    recipientPhone: String,
+    recipientAddress: String,
+    onNameChange: (String) -> Unit,
+    onPhoneChange: (String) -> Unit,
+    onAddressChange: (String) -> Unit
+) {
+    Text("Nhập thông tin địa chỉ thanh toán", style = MaterialTheme.typography.titleMedium)
+    OutlinedTextField(
+        value = recipientName,
+        onValueChange = onNameChange,
+        label = { Text("Họ và Tên người nhận") },
+        modifier = Modifier.fillMaxWidth()
+    )
+    OutlinedTextField(
+        value = recipientPhone,
+        onValueChange = onPhoneChange,
+        label = { Text("Số điện thoại người nhận") },
+        modifier = Modifier.fillMaxWidth()
+    )
+    OutlinedTextField(
+        value = recipientAddress,
+        onValueChange = onAddressChange,
+        label = { Text("Địa chỉ nhận hàng") },
+        modifier = Modifier.fillMaxWidth()
+    )
+}
+
+@Composable
+fun CountdownDisplay(countdownTime: Int) {
+    Column(modifier = Modifier.padding(8.dp)) {
+        Text(
+            text = "Đặt hàng thành công !!!",
+            color = Color.Green,
+            style = MaterialTheme.typography.bodyLarge
+        )
+        Text(
+            text = "Đang chuyển hướng sau $countdownTime giây...",
+            color = Color.Green,
+            style = MaterialTheme.typography.bodyLarge
+        )
     }
 }

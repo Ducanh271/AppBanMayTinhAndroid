@@ -42,6 +42,7 @@ fun AppNavigation(
         authViewModel.checkLoginStatus(context)
     }
 
+
     // Xử lý điều hướng khi trạng thái đăng nhập thay đổi
     LaunchedEffect(isLoggedIn) {
         if (isLoggedIn) {
@@ -70,6 +71,21 @@ fun AppNavigation(
                         popUpTo("login") { inclusive = true }
                     }
                 }
+            }
+
+
+            // Thêm màn hình home để auto thanh toan xong truyền về
+
+            composable("home") {
+                MainScreen(
+                    viewModel = viewModel,
+                    navController = navController,
+                    authViewModel = authViewModel,
+                    cartViewModel = cartViewModel,
+                    onProductClick = { product ->
+                        navController.navigate("product_detail/${product.id}")
+                    }
+                )
             }
 
             composable("sign_up") {
@@ -101,7 +117,8 @@ fun AppNavigation(
             }
 
             composable("product_detail/{productId}") { backStackEntry ->
-                val productId = backStackEntry.arguments?.getString("productId") ?: return@composable
+                val productId =
+                    backStackEntry.arguments?.getString("productId") ?: return@composable
 
                 LaunchedEffect(productId) {
                     viewModel.fetchProductById(productId)
@@ -134,10 +151,21 @@ fun AppNavigation(
 
 
             }
+
+            //Điều hướng tới chatscreen
+
+            composable("chat") {
+                ChatScreen(
+                    onBack = { navController.popBackStack() }
+                )
+            }
             // điều hướng đến oderDetailScreen
             composable("order_detail/{orderId}") { backStackEntry ->
                 val orderId = backStackEntry.arguments?.getString("orderId") ?: return@composable
-                Log.d("AppNavigation", "Navigating to OrderDetailScreen with orderId: $orderId") // Log kiểm tra
+                Log.d(
+                    "AppNavigation",
+                    "Navigating to OrderDetailScreen with orderId: $orderId"
+                ) // Log kiểm tra
 
                 OrderDetailScreen(
                     orderId = orderId,
@@ -158,10 +186,18 @@ fun AppNavigation(
                 CheckoutScreenCart(
                     viewModel = cartViewModel,
                     orderViewModel = orderViewModel,
-                    onBack = { navController.popBackStack() }
+                    onBack = { navController.popBackStack() },
+                    onNavigateToHome = {
+                        navController.navigate("home") {
+                            popUpTo("product_list") { inclusive = true }
+                        }
+                    }
                 )
             }
 
+
+            //call back lại deitailscreen tự động
+// Callback lại DetailScreen tự động
             composable("checkout/{productId}") { backStackEntry ->
                 val productId = backStackEntry.arguments?.getString("productId") ?: return@composable
 
@@ -175,13 +211,22 @@ fun AppNavigation(
                         CheckoutScreen(
                             orderViewModel = orderViewModel,
                             product = product!!,
-                            onBack = { navController.popBackStack() }
+                            onBack = { navController.popBackStack() },
+                            onNavigateToOrderDetail = { orderId ->
+                                navController.navigate("order_detail/$orderId") {
+                                    popUpTo("checkout/$productId") { inclusive = true }
+                                }
+                            }
                         )
                     } else {
                         CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
                     }
                 }
             }
+
+
+
+
 
             composable("account") {
                 AccountScreen(
